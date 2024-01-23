@@ -56,7 +56,6 @@ export class PatientsService {
       },
     });
     const result = await client.send(command);
-    console.log('create: ', result);
     return result;
   }
 
@@ -67,7 +66,6 @@ export class PatientsService {
       Key: key,
     });
     const { Item } = await client.send(command);
-    console.log('Item : ', Item);
     return Item;
   }
 
@@ -81,7 +79,6 @@ export class PatientsService {
       ReturnValues: 'ALL_NEW',
     });
     const result = await client.send(command);
-    console.log('update: ', result);
     return result;
   }
 
@@ -92,22 +89,31 @@ export class PatientsService {
       Key: key,
     });
     const result = await client.send(command);
-    console.log('delete: ', result);
     return result;
   }
 
-  async listByLastname(startCollection: string = 'A') {
+  async listByLastName(
+    collection: string = 'A',
+    lastSeen: string = 'A',
+    limit: number = 20,
+  ) {
     const command = new QueryCommand({
       TableName: DATA_TABLE,
-      KeyConditionExpression:
-        'OriginCountry = :originCountry AND RoastDate > :roastDate',
-      ExpressionAttributeValues: {
-        ':originCountry': 'Ethiopia',
-        ':roastDate': '2023-05-01',
+      IndexName: 'GSI1',
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'GSI1PK',
+        '#sk': 'GSI1SK',
       },
+      ExpressionAttributeValues: {
+        ':pk': `${ID_PREFIX}${collection}`,
+        ':sk': `${ID_PREFIX}${lastSeen}`,
+      },
+      Limit: limit,
     });
 
-    const result = await client.send(command);
+    const { Items } = await client.send(command);
+    return Items;
   }
 
   async listByCreatedAt() {}
