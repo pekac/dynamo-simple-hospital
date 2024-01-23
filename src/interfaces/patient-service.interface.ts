@@ -8,5 +8,10 @@ export abstract class IPatientsService {
     updatePatientDto: UpdatePatientDto,
   ): Promise<string>;
   abstract remove(patientId: string): Promise<string>;
-  //   abstract list(createPatientDto: CreatePatientDto): Promise<string>;
+  abstract listByLastName(
+    startCollection: string,
+    lastSeen: string,
+    limit: number,
+  ): Promise<string>;
+  abstract listByCreatedAt(): Promise<string>;
 }
