@@ -6,15 +6,24 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { PatientsUseCases } from '../use-cases/patients.use-cases';
-import { CreatePatientDto, UpdatePatientDto } from '../dtos/patient.dto';
+import {
+  CreatePatientDto,
+  UpdatePatientDto,
+  ListPatientsDto,
+} from '../dtos/patient.dto';
 
 @Controller('patients')
 export class PatientsController {
   constructor(private patientsUseCase: PatientsUseCases) {}
+  @Get('?')
+  getPatientList(@Query() queryParams: ListPatientsDto) {
+    return this.patientsUseCase.getPatientList(queryParams);
+  }
 
   @Get(':id')
   getPatientById(@Param('id') id: string) {
