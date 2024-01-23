@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsInt } from 'class-validator';
 
 export class CreatePatientDto {
   @IsString()
@@ -26,4 +26,17 @@ export class UpdatePatientDto {
   @IsNumber()
   @IsOptional()
   age: number;
+}
+
+type sortBy = 'lastName' | 'createdAt';
+
+export class ListPatientsDto {
+  @IsString()
+  readonly sortBy: sortBy;
+
+  @IsString()
+  readonly lastSeen: string;
+
+  @IsInt()
+  readonly limit: number;
 }
