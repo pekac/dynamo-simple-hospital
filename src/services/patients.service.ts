@@ -1,0 +1,114 @@
+import {
+  DeleteCommand,
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+  UpdateCommand,
+} from '@aws-sdk/lib-dynamodb';
+import { Injectable } from '@nestjs/common';
+/* entities */
+import { CreatePatientDto, UpdatePatientDto } from '../dtos/patient.dto';
+/* utils */
+import { client, DATA_TABLE } from '../dynamo/client';
+import { objToUpdateExpression } from '../dynamo/helpers';
+import { truncateDateToWeek } from '../utils/dates';
+import { capitalize } from '../utils/text';
+
+const ID_PREFIX = 'PATIENT#';
+
+type Key = 'PK' | 'SK';
+type ItemKey = {
+  [key in Key]: string;
+};
+
+function generatePatientItemKey(patientId: string): ItemKey {
+  return {
+    PK: `${ID_PREFIX}${patientId}`,
+    SK: `${ID_PREFIX}${patientId}`,
+  };
+}
+
+@Injectable()
+export class PatientsService {
+  async create(createPatientDto: CreatePatientDto) {
+    const primaryKey = generatePatientItemKey(createPatientDto.id);
+    /* list by last name */
+    const firstLetter = createPatientDto.lastName.charAt(0);
+    const GSI1PK = `${ID_PREFIX}${capitalize(firstLetter)}`;
+    const GSI1SK = `${ID_PREFIX}${createPatientDto.lastName.toUpperCase()}`;
+    /* list by created at */
+    const createdAt = new Date();
+    const GSI2PK = truncateDateToWeek(createdAt).toISOString();
+    const GSI2SK = createdAt.toISOString();
+
+    const command = new PutCommand({
+      TableName: DATA_TABLE,
+      Item: {
+        ...primaryKey,
+        FirstName: createPatientDto.firstName,
+        LastName: createPatientDto.lastName,
+        Age: createPatientDto.age,
+        CreatedAt: createdAt.toISOString(),
+        GSI1PK,
+        GSI1SK,
+        GSI2PK,
+        GSI2SK,
+      },
+    });
+    const result = await client.send(command);
+    console.log('create: ', result);
+    return result;
+  }
+
+  async one(patientId: string) {
+    const key = generatePatientItemKey(patientId);
+    const command = new GetCommand({
+      TableName: DATA_TABLE,
+      Key: key,
+    });
+    const { Item } = await client.send(command);
+    console.log('Item : ', Item);
+    return Item;
+  }
+
+  async update(patientId: string, updatePatientDto: UpdatePatientDto) {
+    const key = generatePatientItemKey(patientId);
+    const updateExpressionAndValues = objToUpdateExpression(updatePatientDto);
+    const command = new UpdateCommand({
+      TableName: DATA_TABLE,
+      Key: key,
+      ...updateExpressionAndValues,
+      ReturnValues: 'ALL_NEW',
+    });
+    const result = await client.send(command);
+    console.log('update: ', result);
+    return result;
+  }
+
+  async remove(patientId: string) {
+    const key = generatePatientItemKey(patientId);
+    const command = new DeleteCommand({
+      TableName: DATA_TABLE,
+      Key: key,
+    });
+    const result = await client.send(command);
+    console.log('delete: ', result);
+    return result;
+  }
+
+  async listByLastname(startCollection: string = 'A') {
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      KeyConditionExpression:
+        'OriginCountry = :originCountry AND RoastDate > :roastDate',
+      ExpressionAttributeValues: {
+        ':originCountry': 'Ethiopia',
+        ':roastDate': '2023-05-01',
+      },
+    });
+
+    const result = await client.send(command);
+  }
+
+  async listByCreatedAt() {}
+}
