@@ -12,13 +12,13 @@ import { truncateDateToWeek } from 'src/utils/dates';
 export class PatientsUseCases {
   constructor(private patientsService: IPatientsService) {}
   /* TODO: clean this up */
+  /* NEXT: abstract query listing across partitions */
   async getPatientList({
     sortBy,
     limit = 5,
     lastSeen = '$',
   }: ListPatientsDto): Promise<any> {
     const patients: any = [];
-    console.log('limit: ', limit);
     if (sortBy === 'lastName') {
       const firstCollection = 'A';
       const lastCollection = 'Z';
@@ -46,7 +46,6 @@ export class PatientsUseCases {
       return patients;
     }
 
-    /* NEXT: add list patients by createdAt */
     const firstCollection = truncateDateToWeek(new Date()).toISOString();
     const lastCollection = truncateDateToWeek(
       new Date(2024, 0, 1),

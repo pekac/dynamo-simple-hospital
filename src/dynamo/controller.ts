@@ -16,7 +16,7 @@ const maxLength = 9;
 
 export async function addMigration(
   client: DynamoDBDocumentClient,
-  fn: (...args: any) => Promise<void>,
+  migration: (...args: any) => Promise<void>,
 ): Promise<void> {
   counter++;
   const MigrationId = counter.toString().padStart(maxLength, '0');
@@ -35,13 +35,13 @@ export async function addMigration(
       if (Item) return;
     }
 
-    await fn(client);
+    await migration(client);
 
     const createMigrationCommand = new PutCommand({
       TableName: MIGRATIONS_TABLE,
       Item: {
         MigrationId,
-        Name: fn.name,
+        Name: migration.name,
       },
     });
 
@@ -62,6 +62,6 @@ export async function applyMigrations() {
     }
   } catch (e) {
     /* iterate over applied and negate */
-    console.log('You fucked up: ', e.message);
+    console.log('Migration blew up: ', e.message);
   }
 }
