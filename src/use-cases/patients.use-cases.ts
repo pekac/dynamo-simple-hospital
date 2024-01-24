@@ -6,20 +6,24 @@ import {
   ListPatientsDto,
   UpdatePatientDto,
 } from '../dtos/patient.dto';
+import { truncateDateToWeek } from 'src/utils/dates';
 
 @Injectable()
 export class PatientsUseCases {
   constructor(private patientsService: IPatientsService) {}
-
+  /* TODO: clean this up */
   async getPatientList({
     sortBy,
     limit = 5,
     lastSeen = '$',
   }: ListPatientsDto): Promise<any> {
     const patients: any = [];
-    const lastCollection = 'Z';
+    console.log('limit: ', limit);
     if (sortBy === 'lastName') {
-      let collection: string = lastSeen === '$' ? 'A' : lastSeen.charAt(0);
+      const firstCollection = 'A';
+      const lastCollection = 'Z';
+      let collection: string =
+        lastSeen === '$' ? firstCollection : lastSeen.charAt(0);
       while (
         patients.length < limit &&
         collection.charCodeAt(0) <= lastCollection.charCodeAt(0)
@@ -40,6 +44,34 @@ export class PatientsUseCases {
       }
 
       return patients;
+    }
+
+    /* NEXT: add list patients by createdAt */
+    const firstCollection = truncateDateToWeek(new Date()).toISOString();
+    const lastCollection = truncateDateToWeek(
+      new Date(2024, 0, 1),
+    ).toISOString();
+
+    let collection: string =
+      lastSeen === '$'
+        ? firstCollection
+        : truncateDateToWeek(new Date(lastSeen)).toISOString();
+    while (patients.length < limit && collection >= lastCollection) {
+      const items = await this.patientsService.listByCreatedAt(
+        collection,
+        lastSeen,
+        limit,
+      );
+
+      for (const item of items) {
+        patients.push(item);
+      }
+
+      if (items.length < limit) {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(new Date(collection).getDate() - 7);
+        collection = truncateDateToWeek(sevenDaysAgo).toISOString();
+      }
     }
 
     return patients;

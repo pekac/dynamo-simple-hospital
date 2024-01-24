@@ -1,6 +1,6 @@
 export function truncateDateToDay(date: Date) {
   const dayStart = new Date(date);
-  dayStart.setHours(0, 0, 0);
+  dayStart.setHours(0, 0, 0, 0);
   return dayStart;
 }
 

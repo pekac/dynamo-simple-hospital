@@ -38,8 +38,8 @@ export class PatientsService {
     const GSI1SK = `${ID_PREFIX}${createPatientDto.lastName.toUpperCase()}`;
     /* list by created at */
     const createdAt = new Date();
-    const GSI2PK = truncateDateToWeek(createdAt).toISOString();
-    const GSI2SK = createdAt.toISOString();
+    const GSI2PK = `${ID_PREFIX}${truncateDateToWeek(createdAt).toISOString()}`;
+    const GSI2SK = `${ID_PREFIX}${createdAt.toISOString()}`;
 
     const command = new PutCommand({
       TableName: DATA_TABLE,
@@ -116,5 +116,28 @@ export class PatientsService {
     return Items;
   }
 
-  async listByCreatedAt() {}
+  async listByCreatedAt(
+    collection: string = truncateDateToWeek(new Date()).toISOString(),
+    lastSeen: string = new Date().toISOString(),
+    limit: number = 20,
+  ) {
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI2',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'GSI2PK',
+        '#sk': 'GSI2SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': `${ID_PREFIX}${collection}`,
+        ':sk': `${ID_PREFIX}${lastSeen}`,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
+
+    const { Items } = await client.send(command);
+    return Items;
+  }
 }

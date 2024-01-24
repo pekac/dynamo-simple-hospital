@@ -12,6 +12,10 @@ export abstract class IPatientsService {
     startCollection: string,
     lastSeen: string,
     limit: number,
-  ): Promise<string>;
-  abstract listByCreatedAt(): Promise<string>;
+  ): Promise<any>;
+  abstract listByCreatedAt(
+    startCollection: string,
+    lastSeen: string,
+    limit: number,
+  ): Promise<any>;
 }
