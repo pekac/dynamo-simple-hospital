@@ -6,8 +6,12 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
-/* entities */
-import { CreatePatientDto, UpdatePatientDto } from '../dtos/patient.dto';
+/* dtos */
+import {
+  CreatePatientDto,
+  GetPatientDto,
+  UpdatePatientDto,
+} from '../dtos/patient.dto';
 /* utils */
 import { client, DATA_TABLE } from '../dynamo/client';
 import { objToUpdateExpression } from '../dynamo/helpers';
@@ -96,7 +100,7 @@ export class PatientsService {
     collection: string = 'A',
     lastSeen: string = 'A',
     limit: number = 20,
-  ) {
+  ): Promise<GetPatientDto[]> {
     const command = new QueryCommand({
       TableName: DATA_TABLE,
       IndexName: 'GSI1',
@@ -113,7 +117,7 @@ export class PatientsService {
     });
 
     const { Items } = await client.send(command);
-    return Items;
+    return Items as GetPatientDto[];
   }
 
   async listByCreatedAt(

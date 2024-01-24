@@ -49,3 +49,34 @@ export async function createTable(
     throw new Error(e.message);
   }
 }
+
+interface ICrossPartitionEntityList<T> {
+  collection: string;
+  limit: number;
+  getItems: (c: string) => Promise<T[]>;
+  shouldContinue: (c: string) => boolean;
+  updateCollection: (c: string) => string;
+}
+
+export async function crossPartitionEntityList<T>({
+  collection,
+  limit,
+  getItems,
+  shouldContinue,
+  updateCollection,
+}: ICrossPartitionEntityList<T>): Promise<T[]> {
+  const entityList: T[] = [];
+  while (entityList.length < limit && shouldContinue(collection)) {
+    const items = await getItems(collection);
+
+    for (const item of items) {
+      entityList.push(item);
+    }
+
+    if (items.length < limit) {
+      collection = updateCollection(collection);
+    }
+  }
+
+  return entityList;
+}

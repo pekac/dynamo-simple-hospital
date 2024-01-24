@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 /* ctrl */
 import { PatientsController } from '../controllers/patients.controller';
 /* interfaces */
-import { IPatientsService } from '../interfaces/patient-service.interface';
+import { IPatientsService } from '../interfaces/patient.interface';
 /* services */
 import { PatientsService } from '../services/patients.service';
 /* use cases */
