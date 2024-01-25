@@ -10,12 +10,15 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { PatientsUseCases } from '../use-cases/patients.use-cases';
+
 import {
   CreatePatientDto,
-  UpdatePatientDto,
+  CreateTestDto,
   ListPatientsDto,
-} from '../dtos/patient.dto';
+  UpdatePatientDto,
+} from '../dtos/';
+
+import { PatientsUseCases } from '../use-cases/';
 
 @Controller('patients')
 export class PatientsController {
@@ -48,5 +51,22 @@ export class PatientsController {
   @Delete(':id')
   deletePatient(@Param('id') id: string) {
     return this.patientsUseCase.deletePatient(id);
+  }
+  /* tests */
+  @Post(':patientId/tests')
+  @UsePipes(new ValidationPipe())
+  createTestForPatient(
+    @Param('patientId') patientId: string,
+    @Body() createTestDto: CreateTestDto,
+  ) {
+    return this.patientsUseCase.createTestForPatient(patientId, createTestDto);
+  }
+
+  @Get(':patientId/tests/:testId')
+  getTestForPatient(
+    @Param('patientId') patientId: string,
+    @Param('testId') testId: string,
+  ) {
+    return this.patientsUseCase.getTestForPatient(patientId, testId);
   }
 }
