@@ -1,21 +1,25 @@
 import { Injectable } from '@nestjs/common';
-/* interfaces */
-import { IPatientsService } from '../interfaces/patient.interface';
-/* dtos */
+
 import {
   CreatePatientDto,
+  CreateTestDto,
   GetPatientDto,
   ListPatientsDto,
   UpdatePatientDto,
-} from '../dtos/patient.dto';
-/* dynamo */
-import { crossPartitionEntityList } from 'src/dynamo/helpers';
-/* utils */
-import { truncateDateToWeek } from '../utils/dates';
+} from '../dtos/';
+
+import { crossPartitionEntityList } from 'src/dynamo/';
+
+import { IPatientsService, ITestsService } from '../interfaces/';
+
+import { truncateDateToWeek } from '../utils/';
 
 @Injectable()
 export class PatientsUseCases {
-  constructor(private patientsService: IPatientsService) {}
+  constructor(
+    private patientsService: IPatientsService,
+    private testsService: ITestsService,
+  ) {}
 
   async getPatientList(queryParams: ListPatientsDto): Promise<any> {
     if (queryParams.sortBy === 'lastName') {
@@ -96,5 +100,13 @@ export class PatientsUseCases {
 
   deletePatient(patientId: string) {
     return this.patientsService.remove(patientId);
+  }
+
+  createTestForPatient(patientId: string, createTestDto: CreateTestDto) {
+    return this.testsService.create(patientId, createTestDto);
+  }
+
+  getTestForPatient(patientId: string, testId: string) {
+    return this.testsService.one(patientId, testId);
   }
 }
