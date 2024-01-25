@@ -6,17 +6,12 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
-/* dtos */
-import {
-  CreatePatientDto,
-  GetPatientDto,
-  UpdatePatientDto,
-} from '../dtos/patient.dto';
-/* utils */
-import { client, DATA_TABLE } from '../dynamo/client';
-import { objToUpdateExpression } from '../dynamo/helpers';
-import { truncateDateToWeek } from '../utils/dates';
-import { capitalize } from '../utils/text';
+
+import { CreatePatientDto, GetPatientDto, UpdatePatientDto } from '../dtos/';
+
+import { client, DATA_TABLE, objToUpdateExpression } from '../dynamo/';
+
+import { capitalize, truncateDateToWeek } from '../utils/';
 
 const ID_PREFIX = 'PATIENT#';
 
