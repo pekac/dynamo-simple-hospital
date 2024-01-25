@@ -3,9 +3,9 @@ import {
   DeleteTableCommand,
 } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-/* utils */
+
 import { createTable } from '../helpers';
-/* */
+
 import { MIGRATIONS_TABLE } from '../controller';
 
 export async function createMigrationsTable(client: DynamoDBDocumentClient) {

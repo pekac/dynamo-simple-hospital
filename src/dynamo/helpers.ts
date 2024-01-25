@@ -4,8 +4,8 @@ import {
   ListTablesCommand,
 } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-/* utils */
-import { capitalize } from '../utils/text';
+
+import { capitalize } from '../utils/';
 
 type UpdateExpressionAndValues = {
   UpdateExpression: string;

@@ -1,6 +1,6 @@
 import { UpdateTableCommand } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-/* client */
+
 import { DATA_TABLE } from '../client';
 
 export async function addGSI2(client: DynamoDBDocumentClient) {
