@@ -1,18 +1,19 @@
 import { Module } from '@nestjs/common';
-/* ctrl */
-import { PatientsController } from '../controllers/patients.controller';
-/* interfaces */
-import { IPatientsService } from '../interfaces/patient.interface';
-/* services */
-import { PatientsService } from '../services/patients.service';
-/* use cases */
-import { PatientsUseCases } from '../use-cases/patients.use-cases';
+
+import { PatientsController } from '../controllers/';
+
+import { IPatientsService, ITestsService } from '../interfaces/';
+
+import { PatientsService, TestsService } from '../services/';
+
+import { PatientsUseCases } from '../use-cases/';
 
 @Module({
   controllers: [PatientsController],
   providers: [
     PatientsUseCases,
     { provide: IPatientsService, useClass: PatientsService },
+    { provide: ITestsService, useClass: TestsService },
   ],
 })
 export class PatientsModule {}
