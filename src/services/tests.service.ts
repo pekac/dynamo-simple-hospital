@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { DeleteCommand, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  DeleteCommand,
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+} from '@aws-sdk/lib-dynamodb';
 const KSUID = require('ksuid');
 
-import { CreateTestDto } from '../dtos/';
+import { CreateTestDto, GetTestDto } from '../dtos/';
 
 import { DATA_TABLE, client } from '../dynamo/';
 
@@ -56,5 +61,31 @@ export class TestsService {
     });
     const result = await client.send(command);
     return result;
+  }
+
+  async listTestsForPatient(
+    patientId: string,
+    lastSeen: string = '$',
+    limit: number = 20,
+  ): Promise<GetTestDto[]> {
+    const PK = `PATIENT#${patientId}`;
+    const SK = lastSeen === '$' ? PK : `#TEST#${lastSeen}`;
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'PK',
+        '#sk': 'SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
+
+    const { Items } = await client.send(command);
+    return Items as GetTestDto[];
   }
 }

@@ -14,6 +14,7 @@ import {
 import {
   CreatePatientDto,
   CreateTestDto,
+  ListPatientTestsDto,
   ListPatientsDto,
   UpdatePatientDto,
 } from '../dtos/';
@@ -53,6 +54,14 @@ export class PatientsController {
     return this.patientsUseCase.deletePatient(id);
   }
   /* tests */
+  @Get(':patientId/tests')
+  getTestsForPatient(
+    @Param('patientId') patientId: string,
+    @Query() { lastSeen, limit }: ListPatientTestsDto,
+  ) {
+    return this.patientsUseCase.getTestsForPatient(patientId, lastSeen, limit);
+  }
+
   @Post(':patientId/tests')
   @UsePipes(new ValidationPipe())
   createTestForPatient(

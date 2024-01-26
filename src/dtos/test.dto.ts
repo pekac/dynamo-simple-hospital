@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsInt } from 'class-validator';
 
 export class CreateTestDto {
   @IsString()
@@ -21,4 +21,12 @@ export class UpdateTestDto {
   @IsString()
   @IsOptional()
   type: string;
+}
+
+export class ListPatientTestsDto {
+  @IsString()
+  readonly lastSeen: string;
+
+  @IsInt()
+  readonly limit: number;
 }

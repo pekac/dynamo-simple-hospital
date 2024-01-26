@@ -101,7 +101,7 @@ export class PatientsUseCases {
   deletePatient(patientId: string) {
     return this.patientsService.remove(patientId);
   }
-
+  /* tests */
   createTestForPatient(patientId: string, createTestDto: CreateTestDto) {
     return this.testsService.create(patientId, createTestDto);
   }
@@ -112,5 +112,13 @@ export class PatientsUseCases {
 
   deleteTest(patientId: string, testId: string) {
     return this.testsService.remove(patientId, testId);
+  }
+
+  getTestsForPatient(
+    patientId: string,
+    lastSeen: string = '$',
+    limit: number = 3,
+  ) {
+    return this.testsService.listTestsForPatient(patientId, lastSeen, limit);
   }
 }
