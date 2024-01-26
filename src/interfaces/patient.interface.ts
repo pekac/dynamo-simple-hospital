@@ -1,4 +1,4 @@
-import { CreatePatientDto, UpdatePatientDto } from '../dtos/patient.dto';
+import { CreatePatientDto, UpdatePatientDto } from '../dtos/';
 
 export abstract class IPatientsService {
   abstract create(createPatientDto: CreatePatientDto): Promise<string>;

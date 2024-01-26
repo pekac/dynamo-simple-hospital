@@ -1,4 +1,4 @@
-import { CreateTestDto } from '../dtos/test.dto';
+import { CreateTestDto } from '../dtos/';
 
 export abstract class ITestsService {
   abstract create(
@@ -12,13 +12,4 @@ export abstract class ITestsService {
     lastSeen: string,
     limit: number,
   ): Promise<any>;
-  // abstract update(
-  //   patientId: string,
-  //   updatePatientDto: UpdatePatientDto,
-  // ): Promise<string>;
-  // abstract listByLastName(
-  //   startCollection: string,
-  //   lastSeen: string,
-  //   limit: number,
-  // ): Promise<any>;
 }
