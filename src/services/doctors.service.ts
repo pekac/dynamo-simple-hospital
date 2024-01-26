@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
-import { CreateDoctorDto } from '../dtos';
+import { CreateDoctorDto, UpdateDoctorDto } from '../dtos';
 
-import { DATA_TABLE, client } from '../dynamo';
+import { DATA_TABLE, client, objToUpdateExpression } from '../dynamo';
 
 const ID_PREFIX = 'DOCTOR#';
 
@@ -53,5 +53,18 @@ export class DoctorsService {
     });
     const { Item } = await client.send(command);
     return Item;
+  }
+
+  async update(doctorId: string, updateDoctorDto: UpdateDoctorDto) {
+    const key = generateDoctorItemKey(doctorId);
+    const updateExpressionAndValues = objToUpdateExpression(updateDoctorDto);
+    const command = new UpdateCommand({
+      TableName: DATA_TABLE,
+      Key: key,
+      ...updateExpressionAndValues,
+      ReturnValues: 'ALL_NEW',
+    });
+    const result = await client.send(command);
+    return result;
   }
 }

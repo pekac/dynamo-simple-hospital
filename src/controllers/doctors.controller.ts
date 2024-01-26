@@ -4,11 +4,12 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 
-import { CreateDoctorDto } from '../dtos';
+import { CreateDoctorDto, UpdateDoctorDto } from '../dtos';
 
 import { DoctorsUseCases } from '../use-cases';
 
@@ -25,5 +26,14 @@ export class DoctorsController {
   @Get(':id')
   getDoctorById(@Param('id') id: string) {
     return this.doctorsUseCases.getDoctorById(id);
+  }
+
+  @Put(':id')
+  @UsePipes(new ValidationPipe())
+  updatePatient(
+    @Param('id') doctorId: string,
+    @Body() updateDoctorDto: UpdateDoctorDto,
+  ) {
+    return this.doctorsUseCases.updateDoctor(doctorId, updateDoctorDto);
   }
 }

@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateDoctorDto {
   @IsString()
@@ -15,3 +15,13 @@ export class CreateDoctorDto {
 }
 
 export class GetDoctorDto extends CreateDoctorDto {}
+
+export class UpdateDoctorDto {
+  @IsOptional()
+  @IsString()
+  lastName: string;
+
+  @IsOptional()
+  @IsString()
+  specialization: string;
+}

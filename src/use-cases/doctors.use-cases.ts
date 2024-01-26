@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateDoctorDto } from '../dtos';
+import { CreateDoctorDto, UpdateDoctorDto } from '../dtos';
 import { IDoctorsService } from 'src/interfaces';
 
 @Injectable()
@@ -13,5 +13,9 @@ export class DoctorsUseCases {
 
   getDoctorById(doctorId: string) {
     return this.doctorsService.one(doctorId);
+  }
+
+  updateDoctor(doctorId: string, updateDoctorDto: UpdateDoctorDto) {
+    return this.doctorsService.update(doctorId, updateDoctorDto);
   }
 }
