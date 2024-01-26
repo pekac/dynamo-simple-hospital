@@ -6,11 +6,11 @@ export abstract class ITestsService {
     createTestDto: CreateTestDto,
   ): Promise<string>;
   abstract one(patientId: string, testId: string): Promise<string>;
+  abstract remove(patientId: string, testId: string): Promise<string>;
   // abstract update(
   //   patientId: string,
   //   updatePatientDto: UpdatePatientDto,
   // ): Promise<string>;
-  // abstract remove(patientId: string): Promise<string>;
   // abstract listByLastName(
   //   startCollection: string,
   //   lastSeen: string,

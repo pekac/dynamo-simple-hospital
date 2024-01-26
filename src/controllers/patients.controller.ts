@@ -69,4 +69,12 @@ export class PatientsController {
   ) {
     return this.patientsUseCase.getTestForPatient(patientId, testId);
   }
+
+  @Delete(':patientId/tests/:testId')
+  deleteTest(
+    @Param('patientId') patientId: string,
+    @Param('testId') testId: string,
+  ) {
+    return this.patientsUseCase.deleteTest(patientId, testId);
+  }
 }

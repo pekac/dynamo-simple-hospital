@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DeleteCommand, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 const KSUID = require('ksuid');
 
 import { CreateTestDto } from '../dtos/';
@@ -46,5 +46,15 @@ export class TestsService {
     });
     const { Item } = await client.send(command);
     return Item;
+  }
+
+  async remove(patientId: string, testId: string) {
+    const key = generateTestItemKey(patientId, testId);
+    const command = new DeleteCommand({
+      TableName: DATA_TABLE,
+      Key: key,
+    });
+    const result = await client.send(command);
+    return result;
   }
 }
