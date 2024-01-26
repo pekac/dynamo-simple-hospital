@@ -6,21 +6,14 @@ export class CreateTestDto {
 
   @IsString()
   type: string;
+
+  @IsString()
+  doctorId: string;
 }
 
 export class GetTestDto extends CreateTestDto {
   @IsString()
   id: string;
-}
-
-export class UpdateTestDto {
-  @IsString()
-  @IsOptional()
-  code: string;
-
-  @IsString()
-  @IsOptional()
-  type: string;
 }
 
 export class ListPatientTestsDto {

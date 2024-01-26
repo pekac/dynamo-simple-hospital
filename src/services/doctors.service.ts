@@ -34,6 +34,9 @@ export class DoctorsService {
   async create(createDoctorDto: CreateDoctorDto) {
     const createdAt = new Date();
     const primaryKey = generateDoctorItemKey(createDoctorDto.id);
+    /* for fetching tests */
+    const GSI1PK = primaryKey.PK;
+    const GSI1SK = primaryKey.SK;
 
     const command = new PutCommand({
       TableName: DATA_TABLE,
@@ -44,6 +47,8 @@ export class DoctorsService {
         LastName: createDoctorDto.lastName,
         Specialization: createDoctorDto.specialization,
         CreatedAt: createdAt.toISOString(),
+        GSI1PK,
+        GSI1SK,
       },
     });
     const result = await client.send(command);

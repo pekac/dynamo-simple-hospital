@@ -29,6 +29,9 @@ export class TestsService {
     const createdAt = new Date();
     const ksuid = KSUID.randomSync(createdAt).string;
     const primaryKey = generateTestItemKey(patientId, ksuid);
+    /* for fetching by doctor id */
+    const GSI1PK = `DOCTOR#${createTestDto.doctorId}`;
+    const GSI1SK = primaryKey.SK;
 
     const command = new PutCommand({
       TableName: DATA_TABLE,
@@ -37,6 +40,8 @@ export class TestsService {
         Code: createTestDto.code,
         Type: createTestDto.type,
         CreatedAt: createdAt.toISOString(),
+        GSI1PK,
+        GSI1SK,
       },
     });
     const result = await client.send(command);
