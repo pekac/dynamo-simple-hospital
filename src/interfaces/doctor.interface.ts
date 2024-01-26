@@ -7,4 +7,5 @@ export abstract class IDoctorsService {
     doctorId: string,
     updateDoctorDto: UpdateDoctorDto,
   ): Promise<string>;
+  abstract remove(doctorId: string): Promise<string>;
 }

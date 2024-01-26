@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  DeleteCommand,
+  GetCommand,
+  PutCommand,
+  UpdateCommand,
+} from '@aws-sdk/lib-dynamodb';
 
 import { CreateDoctorDto, UpdateDoctorDto } from '../dtos';
 
@@ -63,6 +68,16 @@ export class DoctorsService {
       Key: key,
       ...updateExpressionAndValues,
       ReturnValues: 'ALL_NEW',
+    });
+    const result = await client.send(command);
+    return result;
+  }
+
+  async remove(doctorId: string) {
+    const key = generateDoctorItemKey(doctorId);
+    const command = new DeleteCommand({
+      TableName: DATA_TABLE,
+      Key: key,
     });
     const result = await client.send(command);
     return result;

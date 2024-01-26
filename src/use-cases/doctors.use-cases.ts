@@ -18,4 +18,8 @@ export class DoctorsUseCases {
   updateDoctor(doctorId: string, updateDoctorDto: UpdateDoctorDto) {
     return this.doctorsService.update(doctorId, updateDoctorDto);
   }
+
+  deleteDoctor(doctorId: string) {
+    return this.doctorsService.remove(doctorId);
+  }
 }
