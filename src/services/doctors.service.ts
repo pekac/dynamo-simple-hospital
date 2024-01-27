@@ -87,4 +87,36 @@ export class DoctorsService {
     const result = await client.send(command);
     return result;
   }
+
+  async addNewSpecialization(specialization: string) {
+    const command = new UpdateCommand({
+      TableName: DATA_TABLE,
+      Key: {
+        PK: 'DOCTOR',
+        SK: `SPECIALIZATION`,
+      },
+      UpdateExpression: 'Add #specialization :specialization',
+      ExpressionAttributeNames: {
+        '#specialization': 'Specializations',
+      },
+      ExpressionAttributeValues: {
+        ':specialization': specialization,
+      },
+      ReturnValues: 'ALL_NEW',
+    });
+    const result = await client.send(command);
+    return result;
+  }
+
+  async getSpecializations() {
+    const command = new GetCommand({
+      TableName: DATA_TABLE,
+      Key: {
+        PK: 'DOCTOR',
+        SK: `SPECIALIZATION`,
+      },
+    });
+    const { Item } = await client.send(command);
+    return Item;
+  }
 }
