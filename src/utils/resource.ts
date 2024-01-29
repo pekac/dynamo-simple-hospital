@@ -7,9 +7,7 @@ import {
 
 import { DATA_TABLE, client, objToUpdateExpression } from '../dynamo';
 
-export type Id = {
-  id: string;
-};
+import { decapitalize } from './text';
 
 export type Key = 'PK' | 'SK';
 export type ItemKey = {
@@ -17,32 +15,63 @@ export type ItemKey = {
 };
 
 export interface IResource<T> {
-  create(createDto: T): Promise<string>;
+  create(createDto: T): Promise<T | undefined>;
   one(pk: string, sk: string): Promise<T | undefined>;
   update(pk: string, sk: string, updateDto: Partial<T>): Promise<T>;
   remove(pk: string, sk: string): Promise<string>;
+  generateItemKey(pk: string, sk: string): ItemKey;
+  mapToEntity(
+    entity: Record<string, number | string> | undefined,
+  ): T | undefined;
 }
 
-export abstract class Resource<T extends Id> implements IResource<T> {
+export abstract class Resource<T extends Record<keyof T, any>>
+  implements IResource<T>
+{
+  c: { new (): T };
   pkPrefix: string;
   skPrefix: string;
   private readonly client: DynamoDBDocumentClient = client;
   private readonly tableName: string = DATA_TABLE;
 
-  constructor(pkPrefix: string, skPrefix: string = pkPrefix) {
+  constructor(c: { new (): T }, pkPrefix: string, skPrefix: string = pkPrefix) {
     this.pkPrefix = pkPrefix;
     this.skPrefix = skPrefix;
+    this.c = c;
   }
 
-  private generateItemKey(pk: string, sk: string): ItemKey {
+  abstract create(createDto: T): Promise<T | undefined>;
+
+  generateItemKey(pk: string, sk: string = pk): ItemKey {
     return {
       PK: `${this.pkPrefix}${pk}`,
       SK: `${this.skPrefix}${sk}`,
     };
   }
 
-  abstract create(createDto: T): Promise<string>;
-  abstract mapToEntity(entity: Record<string, any> | undefined): T | undefined;
+  mapToEntity(
+    entity: Record<string, number | string> | undefined = {},
+  ): T | undefined {
+    const keys: string[] = Object.keys(entity);
+
+    if (keys.length === 0) {
+      return undefined;
+    }
+
+    type Key = keyof T;
+    const transformed: Record<Key, number | string> = new this.c();
+
+    const keyNames = Object.keys(transformed) as Key[];
+
+    for (const key of keys) {
+      const transformedKey = decapitalize(key) as Key;
+      if (keyNames.includes(transformedKey)) {
+        transformed[transformedKey] = entity[key];
+      }
+    }
+
+    return transformed as T;
+  }
 
   async one(pk: string, sk: string = pk): Promise<T | undefined> {
     const key = this.generateItemKey(pk, sk);
