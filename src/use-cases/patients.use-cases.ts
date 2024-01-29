@@ -43,13 +43,17 @@ export class PatientsUseCases {
     const getItems = (col: string) =>
       this.patientsService.listByCreatedAt(col, lastSeen, limit);
 
-    const updateCollection = (col: string): string => {
+    const updateCollection = (
+      col: string,
+    ): { collection: string; lastSeen?: string } => {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(new Date(col).getDate() - 7);
-      return truncateDateToWeek(sevenDaysAgo).toISOString();
+      return {
+        collection: truncateDateToWeek(sevenDaysAgo).toISOString(),
+      };
     };
 
-    return crossPartitionEntityList<GetPatientDto>({
+    return crossPartitionEntityList({
       collection:
         lastSeen === '$'
           ? firstCollection
@@ -71,13 +75,18 @@ export class PatientsUseCases {
     const shouldContinue = (col: string) =>
       col.charCodeAt(0) <= lastCollection.charCodeAt(0);
 
-    const getItems = (col: string) =>
+    const getItems = (col: string, lastSeen = '$') =>
       this.patientsService.listByLastName(col, lastSeen.toUpperCase(), limit);
 
-    const updateCollection = (col: string) =>
-      String.fromCharCode(col.charCodeAt(0) + 1);
+    const updateCollection = (
+      col: string,
+    ): { collection: string; lastSeen?: string } => {
+      return {
+        collection: String.fromCharCode(col.charCodeAt(0) + 1),
+      };
+    };
 
-    return crossPartitionEntityList<GetPatientDto>({
+    return crossPartitionEntityList({
       collection: lastSeen === '$' ? firstCollection : lastSeen.charAt(0),
       limit,
       getItems,
