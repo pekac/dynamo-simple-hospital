@@ -28,16 +28,16 @@ export interface IResource<T> {
 export abstract class Resource<T extends Record<keyof T, any>>
   implements IResource<T>
 {
-  c: { new (): T };
-  pkPrefix: string;
-  skPrefix: string;
   private readonly client: DynamoDBDocumentClient = client;
   private readonly tableName: string = DATA_TABLE;
+  private c: { new (): T };
+  pkPrefix: string;
+  skPrefix: string;
 
   constructor(c: { new (): T }, pkPrefix: string, skPrefix: string = pkPrefix) {
+    this.c = c;
     this.pkPrefix = pkPrefix;
     this.skPrefix = skPrefix;
-    this.c = c;
   }
 
   abstract create(createDto: T): Promise<T | undefined>;
