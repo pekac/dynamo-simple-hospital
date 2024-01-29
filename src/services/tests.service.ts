@@ -37,6 +37,7 @@ export class TestsService {
       TableName: DATA_TABLE,
       Item: {
         ...primaryKey,
+        Id: ksuid,
         Code: createTestDto.code,
         Type: createTestDto.type,
         CreatedAt: createdAt.toISOString(),

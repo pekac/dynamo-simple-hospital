@@ -44,6 +44,7 @@ export class PatientsService {
       TableName: DATA_TABLE,
       Item: {
         ...primaryKey,
+        Id: createPatientDto.id,
         FirstName: createPatientDto.firstName,
         LastName: createPatientDto.lastName,
         Age: createPatientDto.age,
