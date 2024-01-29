@@ -3,10 +3,11 @@ import {
   DeleteCommand,
   GetCommand,
   PutCommand,
+  QueryCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { CreateDoctorDto, UpdateDoctorDto } from '../dtos';
+import { CreateDoctorDto, LastSeenDoctorDto, UpdateDoctorDto } from '../dtos';
 
 import { DATA_TABLE, client, objToUpdateExpression } from '../dynamo';
 
@@ -38,6 +39,11 @@ export class DoctorsService {
     const GSI1PK = primaryKey.PK;
     const GSI1SK = primaryKey.SK;
 
+    /* for listing by specialization */
+    const specialization = createDoctorDto.specialization.toUpperCase();
+    const GSI2PK = `SPECIALIZATION#${specialization}`;
+    const GSI2SK = `${specialization}#${createDoctorDto.id}`;
+
     const command = new PutCommand({
       TableName: DATA_TABLE,
       Item: {
@@ -49,6 +55,8 @@ export class DoctorsService {
         CreatedAt: createdAt.toISOString(),
         GSI1PK,
         GSI1SK,
+        GSI2PK,
+        GSI2SK,
       },
     });
     const result = await client.send(command);
@@ -100,7 +108,7 @@ export class DoctorsService {
         '#specialization': 'Specializations',
       },
       ExpressionAttributeValues: {
-        ':specialization': specialization,
+        ':specialization': specialization.toUpperCase(),
       },
       ReturnValues: 'ALL_NEW',
     });
@@ -117,6 +125,31 @@ export class DoctorsService {
       },
     });
     const { Item } = await client.send(command);
-    return Item;
+    return Item?.Specialization;
+  }
+
+  /* TODO: generalize lastSeen type */
+  async list(
+    specialization: string,
+    lastSeen: LastSeenDoctorDto,
+    limit: number = 5,
+  ) {
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI2',
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'GSI2PK',
+        '#sk': 'GSI2SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': `SPECIALIZATION#${specialization}`,
+        ':sk': `${specialization}#${lastSeen.id}`,
+      },
+      Limit: limit,
+    });
+
+    const { Items } = await client.send(command);
+    return Items;
   }
 }
