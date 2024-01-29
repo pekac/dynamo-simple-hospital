@@ -19,8 +19,8 @@ type ItemKey = {
 };
 /* 
 TODO (services):
-- [] extract service template 
-- [] add id in attrs
+- [x] extract service template 
+- [x] add id in attrs
 - [] transform data to include only app relevant attrs
 */
 function generateDoctorItemKey(doctorId: string): ItemKey {
@@ -129,6 +129,7 @@ export class DoctorsService {
   }
 
   /* TODO: generalize lastSeen type */
+  /* and list method */
   async list(
     specialization: string,
     lastSeen: LastSeenDoctorDto,
