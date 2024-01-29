@@ -6,11 +6,12 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 
-import { CreateDoctorDto, UpdateDoctorDto } from '../dtos';
+import { CreateDoctorDto, ListDoctorsDto, UpdateDoctorDto } from '../dtos';
 
 import { DoctorsUseCases } from '../use-cases';
 
@@ -31,7 +32,7 @@ export class DoctorsController {
 
   @Put(':id')
   @UsePipes(new ValidationPipe())
-  updatePatient(
+  updateDoctor(
     @Param('id') doctorId: string,
     @Body() updateDoctorDto: UpdateDoctorDto,
   ) {
@@ -39,7 +40,12 @@ export class DoctorsController {
   }
 
   @Delete(':id')
-  deletePatient(@Param('id') doctorId: string) {
+  deleteDoctor(@Param('id') doctorId: string) {
     return this.doctorsUseCases.deleteDoctor(doctorId);
+  }
+
+  @Get('?')
+  getDoctorList(@Query() queryParams: ListDoctorsDto) {
+    return this.doctorsUseCases.getDoctorList(queryParams);
   }
 }
