@@ -11,7 +11,7 @@ export abstract class IDoctorsService {
   abstract getSpecializations(): Promise<string[]>;
   abstract list(
     startCollection: string,
-    lastSeen: string,
     limit: number,
+    lastSeen: string,
   ): Promise<any>;
 }

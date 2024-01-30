@@ -1,21 +1,25 @@
+import { Patient } from '../entities';
+
 import { CreatePatientDto, UpdatePatientDto } from '../dtos/';
 
 export abstract class IPatientsService {
-  abstract create(createPatientDto: CreatePatientDto): Promise<string>;
-  abstract one(patientId: string): Promise<string>;
+  abstract create(
+    createPatientDto: CreatePatientDto,
+  ): Promise<Patient | undefined>;
+  abstract one(patientId: string): Promise<Patient | undefined>;
   abstract update(
     patientId: string,
     updatePatientDto: UpdatePatientDto,
-  ): Promise<string>;
+  ): Promise<Patient>;
   abstract remove(patientId: string): Promise<string>;
   abstract listByLastName(
     startCollection: string,
-    lastSeen: string,
     limit: number,
-  ): Promise<any>;
+    lastSeen: string,
+  ): Promise<Patient[]>;
   abstract listByCreatedAt(
     startCollection: string,
-    lastSeen: string,
     limit: number,
-  ): Promise<any>;
+    lastSeen: string,
+  ): Promise<Patient[]>;
 }

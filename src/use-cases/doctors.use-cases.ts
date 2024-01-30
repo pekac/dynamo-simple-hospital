@@ -51,8 +51,8 @@ export class DoctorsUseCases {
 
     const shouldContinue = (col: string) => collections.includes(col);
 
-    const getItems = (col: string, lastSeen: string) =>
-      this.doctorsService.list(col, lastSeen, limit);
+    const getItems = (col: string, limit: number, lastSeen: string) =>
+      this.doctorsService.list(col, limit, lastSeen);
 
     const updateCollection = (col: string, lastSeen: string = '@') => {
       const index = collections.indexOf(col);

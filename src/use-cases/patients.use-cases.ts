@@ -3,12 +3,13 @@ import { Injectable } from '@nestjs/common';
 import {
   CreatePatientDto,
   CreateTestDto,
-  GetPatientDto,
   ListPatientsDto,
   UpdatePatientDto,
 } from '../dtos/';
 
-import { crossPartitionEntityList } from 'src/dynamo/';
+import { crossPartitionEntityList } from '../dynamo/';
+
+import { Patient } from '../entities';
 
 import { IPatientsService, ITestsService } from '../interfaces/';
 
@@ -32,7 +33,7 @@ export class PatientsUseCases {
   async getPatientsByCreatedAt({
     lastSeen = '$',
     limit,
-  }: ListPatientsDto): Promise<GetPatientDto[]> {
+  }: ListPatientsDto): Promise<Patient[]> {
     const firstCollection = truncateDateToWeek(new Date()).toISOString();
     const lastCollection = truncateDateToWeek(
       new Date(2024, 0, 1),
@@ -40,8 +41,8 @@ export class PatientsUseCases {
 
     const shouldContinue = (col: string) => col >= lastCollection;
 
-    const getItems = (col: string) =>
-      this.patientsService.listByCreatedAt(col, lastSeen, limit);
+    const getItems = (col: string, limit: number) =>
+      this.patientsService.listByCreatedAt(col, limit, lastSeen);
 
     const updateCollection = (
       col: string,
@@ -68,15 +69,15 @@ export class PatientsUseCases {
   async getPatientsByLastName({
     lastSeen = '$',
     limit,
-  }: ListPatientsDto): Promise<GetPatientDto[]> {
+  }: ListPatientsDto): Promise<Patient[]> {
     const firstCollection = 'A';
     const lastCollection = 'Z';
 
     const shouldContinue = (col: string) =>
       col.charCodeAt(0) <= lastCollection.charCodeAt(0);
 
-    const getItems = (col: string, lastSeen = '$') =>
-      this.patientsService.listByLastName(col, lastSeen.toUpperCase(), limit);
+    const getItems = (col: string, limit: number, lastSeen = '$') =>
+      this.patientsService.listByLastName(col, limit, lastSeen.toUpperCase());
 
     const updateCollection = (
       col: string,
