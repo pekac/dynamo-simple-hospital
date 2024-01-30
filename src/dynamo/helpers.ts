@@ -54,7 +54,7 @@ interface ICrossPartitionEntityList<T> {
   collection: string;
   lastSeen?: string;
   limit: number;
-  getItems: (c: string, lastSeen?: string) => Promise<T[]>;
+  getItems: (c: string, limit: number, lastSeen?: string) => Promise<T[]>;
   shouldContinue: (c: string) => boolean;
   updateCollection: (c: string) => { collection: string; lastSeen?: string };
 }
@@ -62,20 +62,23 @@ interface ICrossPartitionEntityList<T> {
 export async function crossPartitionEntityList<T>({
   collection,
   lastSeen,
-  limit,
+  limit: totalLimit,
   getItems,
   shouldContinue,
   updateCollection,
 }: ICrossPartitionEntityList<T>): Promise<T[]> {
   const entityList: T[] = [];
-  while (entityList.length < limit && shouldContinue(collection)) {
-    const items = await getItems(collection, lastSeen);
-
+  while (entityList.length < totalLimit && shouldContinue(collection)) {
+    const items = await getItems(
+      collection,
+      totalLimit - entityList.length,
+      lastSeen,
+    );
     for (const item of items) {
       entityList.push(item);
     }
 
-    if (items.length < limit) {
+    if (items.length < totalLimit) {
       ({ collection, lastSeen } = updateCollection(collection));
     }
   }
