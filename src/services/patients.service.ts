@@ -1,4 +1,4 @@
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 
 import { client, DATA_TABLE } from '../dynamo/';
@@ -52,85 +52,52 @@ export class PatientsService extends Resource<Patient> {
     }
   }
 
-  // async one(patientId: string) {
-  //   const key = generatePatientItemKey(patientId);
-  //   const command = new GetCommand({
-  //     TableName: DATA_TABLE,
-  //     Key: key,
-  //   });
-  //   const { Item } = await client.send(command);
-  //   return Item;
-  // }
+  async listByLastName(
+    collection: string = 'A',
+    lastSeen: string = 'A',
+    limit: number = 20,
+  ): Promise<Patient[]> {
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI1',
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'GSI1PK',
+        '#sk': 'GSI1SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': `${ID_PREFIX}${collection}`,
+        ':sk': `${ID_PREFIX}${lastSeen}`,
+      },
+      Limit: limit,
+    });
 
-  // async update(patientId: string, updatePatientDto: UpdatePatientDto) {
-  //   const key = generatePatientItemKey(patientId);
-  //   const updateExpressionAndValues = objToUpdateExpression(updatePatientDto);
-  //   const command = new UpdateCommand({
-  //     TableName: DATA_TABLE,
-  //     Key: key,
-  //     ...updateExpressionAndValues,
-  //     ReturnValues: 'ALL_NEW',
-  //   });
-  //   const result = await client.send(command);
-  //   return result;
-  // }
+    const { Items } = await client.send(command);
+    return Items as Patient[];
+  }
 
-  // async remove(patientId: string) {
-  //   const key = generatePatientItemKey(patientId);
-  //   const command = new DeleteCommand({
-  //     TableName: DATA_TABLE,
-  //     Key: key,
-  //   });
-  //   const result = await client.send(command);
-  //   return result;
-  // }
+  async listByCreatedAt(
+    collection: string = truncateDateToWeek(new Date()).toISOString(),
+    lastSeen: string = new Date().toISOString(),
+    limit: number = 20,
+  ) {
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI2',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'GSI2PK',
+        '#sk': 'GSI2SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': `${ID_PREFIX}${collection}`,
+        ':sk': `${ID_PREFIX}${lastSeen}`,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
 
-  // async listByLastName(
-  //   collection: string = 'A',
-  //   lastSeen: string = 'A',
-  //   limit: number = 20,
-  // ): Promise<GetPatientDto[]> {
-  //   const command = new QueryCommand({
-  //     TableName: DATA_TABLE,
-  //     IndexName: 'GSI1',
-  //     KeyConditionExpression: '#pk = :pk AND #sk > :sk',
-  //     ExpressionAttributeNames: {
-  //       '#pk': 'GSI1PK',
-  //       '#sk': 'GSI1SK',
-  //     },
-  //     ExpressionAttributeValues: {
-  //       ':pk': `${ID_PREFIX}${collection}`,
-  //       ':sk': `${ID_PREFIX}${lastSeen}`,
-  //     },
-  //     Limit: limit,
-  //   });
-
-  //   const { Items } = await client.send(command);
-  //   return Items as GetPatientDto[];
-  // }
-
-  // async listByCreatedAt(
-  //   collection: string = truncateDateToWeek(new Date()).toISOString(),
-  //   lastSeen: string = new Date().toISOString(),
-  //   limit: number = 20,
-  // ) {
-  //   const command = new QueryCommand({
-  //     TableName: DATA_TABLE,
-  //     IndexName: 'GSI2',
-  //     KeyConditionExpression: '#pk = :pk AND #sk < :sk',
-  //     ExpressionAttributeNames: {
-  //       '#pk': 'GSI2PK',
-  //       '#sk': 'GSI2SK',
-  //     },
-  //     ExpressionAttributeValues: {
-  //       ':pk': `${ID_PREFIX}${collection}`,
-  //       ':sk': `${ID_PREFIX}${lastSeen}`,
-  //     },
-  //     ScanIndexForward: false,
-  //     Limit: limit,
-  //   });
-
-  //   const { Items } = await client.send(command);
-  //   return Items;
-  // }
+    const { Items } = await client.send(command);
+    return Items;
+  }
 }

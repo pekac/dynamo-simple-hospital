@@ -13,6 +13,7 @@ export type Key = 'PK' | 'SK';
 export type ItemKey = {
   [key in Key]: string;
 };
+export type PrimaryKey = string | { pk: string; sk: string };
 
 export interface IResource<T> {
   create(createDto: T): Promise<T | undefined>;
@@ -73,8 +74,8 @@ export abstract class Resource<T extends Record<keyof T, any>>
     return transformed as T;
   }
 
-  async one(pk: string, sk: string = pk): Promise<T | undefined> {
-    const key = this.generateItemKey(pk, sk);
+  async one(...args: [string, string]): Promise<T | undefined> {
+    const key = this.generateItemKey(...args);
     const command = new GetCommand({
       TableName: this.tableName,
       Key: key,
@@ -83,7 +84,15 @@ export abstract class Resource<T extends Record<keyof T, any>>
     return this.mapToEntity(Item);
   }
 
-  async update(pk: string, sk: string, updateDto: Partial<T>): Promise<T> {
+  async update(
+    ...args: [string, Partial<T>] | [string, string, Partial<T>]
+  ): Promise<T> {
+    /* not nice, mini hack for 2nd optional param */
+    const [pk, sk, updateDto] = [
+      args[0],
+      args.length > 2 ? args[1] : args[0],
+      args[args.length - 1],
+    ] as [string, string, Partial<T>];
     const key = this.generateItemKey(pk, sk);
     const updateExpressionAndValues = objToUpdateExpression(updateDto);
     const command = new UpdateCommand({
@@ -96,8 +105,8 @@ export abstract class Resource<T extends Record<keyof T, any>>
     return this.mapToEntity(result.Attributes) as T;
   }
 
-  async remove(pk: string, sk: string = pk): Promise<any> {
-    const key = this.generateItemKey(pk, sk);
+  async remove(...args: [string, string]): Promise<any> {
+    const key = this.generateItemKey(...args);
     const command = new DeleteCommand({
       TableName: this.tableName,
       Key: key,
