@@ -14,8 +14,6 @@ export class CreatePatientDto {
   age: number;
 }
 
-export class GetPatientDto extends CreatePatientDto {}
-
 export class UpdatePatientDto {
   @IsString()
   @IsOptional()

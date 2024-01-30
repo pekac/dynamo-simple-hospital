@@ -1,11 +1,13 @@
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 
+import { CreatePatientDto } from '../dtos';
+
 import { client, DATA_TABLE } from '../dynamo/';
 
-import { capitalize, Resource, truncateDateToWeek } from '../utils/';
+import { Patient } from '../entities/';
 
-import { Patient } from 'src/entities/patient.entity';
+import { capitalize, Resource, truncateDateToWeek } from '../utils/';
 
 const ID_PREFIX = 'PATIENT#';
 
@@ -15,7 +17,9 @@ export class PatientsService extends Resource<Patient> {
     super(Patient, ID_PREFIX);
   }
 
-  async create(createPatientDto: Patient): Promise<Patient | undefined> {
+  async create(
+    createPatientDto: CreatePatientDto,
+  ): Promise<Patient | undefined> {
     const primaryKey = this.generateItemKey(createPatientDto.id);
     /* list by last name */
     const firstLetter = createPatientDto.lastName.charAt(0);
@@ -47,15 +51,14 @@ export class PatientsService extends Resource<Patient> {
       await client.send(command);
       return this.mapToEntity(item);
     } catch (e) {
-      console.log('Error: ', e.message);
       return undefined;
     }
   }
 
   async listByLastName(
     collection: string = 'A',
-    lastSeen: string = 'A',
     limit: number = 20,
+    lastSeen: string = 'A',
   ): Promise<Patient[]> {
     const command = new QueryCommand({
       TableName: DATA_TABLE,
@@ -73,14 +76,14 @@ export class PatientsService extends Resource<Patient> {
     });
 
     const { Items } = await client.send(command);
-    return Items as Patient[];
+    return Items?.map((item) => this.mapToEntity(item)) as Patient[];
   }
 
   async listByCreatedAt(
     collection: string = truncateDateToWeek(new Date()).toISOString(),
-    lastSeen: string = new Date().toISOString(),
     limit: number = 20,
-  ) {
+    lastSeen: string = new Date().toISOString(),
+  ): Promise<Patient[]> {
     const command = new QueryCommand({
       TableName: DATA_TABLE,
       IndexName: 'GSI2',
@@ -98,6 +101,6 @@ export class PatientsService extends Resource<Patient> {
     });
 
     const { Items } = await client.send(command);
-    return Items;
+    return Items?.map((item) => this.mapToEntity(item)) as Patient[];
   }
 }

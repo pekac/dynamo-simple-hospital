@@ -132,8 +132,8 @@ export class DoctorsService {
   /* and list method */
   async list(
     specialization: string,
-    lastSeen: LastSeenDoctorDto,
     limit: number = 5,
+    lastSeen: LastSeenDoctorDto,
   ) {
     const command = new QueryCommand({
       TableName: DATA_TABLE,
