@@ -1,15 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import {
-  CreateDoctorDto,
-  GetDoctorDto,
-  ListDoctorsDto,
-  UpdateDoctorDto,
-} from '../dtos';
-
-import { IDoctorsService } from '../interfaces';
+import { CreateDoctorDto, ListDoctorsDto, UpdateDoctorDto } from '../dtos';
 
 import { crossPartitionEntityList } from '../dynamo';
+
+import { Doctor } from '../entities';
+
+import { IDoctorsService } from '../interfaces';
 
 import { arraySubset } from '../utils';
 
@@ -40,7 +37,7 @@ export class DoctorsUseCases {
       collection: '',
     },
     limit = 5,
-  }: ListDoctorsDto): Promise<GetDoctorDto[]> {
+  }: ListDoctorsDto): Promise<Doctor[]> {
     const specializations: string[] =
       (await this.doctorsService.getSpecializations()) || [];
 

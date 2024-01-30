@@ -23,8 +23,6 @@ export class CreateDoctorDto {
   specialization: string;
 }
 
-export class GetDoctorDto extends CreateDoctorDto {}
-
 export class UpdateDoctorDto {
   @IsOptional()
   @IsString()
@@ -35,6 +33,7 @@ export class UpdateDoctorDto {
   specialization: string;
 }
 
+/* TODO: generalize this crapo */
 export class LastSeenDoctorDto {
   @IsString()
   readonly id: string;

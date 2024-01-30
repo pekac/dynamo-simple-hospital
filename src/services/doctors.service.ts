@@ -1,40 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import {
-  DeleteCommand,
   GetCommand,
   PutCommand,
   QueryCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { CreateDoctorDto, LastSeenDoctorDto, UpdateDoctorDto } from '../dtos';
+import { CreateDoctorDto, LastSeenDoctorDto } from '../dtos';
 
-import { DATA_TABLE, client, objToUpdateExpression } from '../dynamo';
+import { DATA_TABLE, client } from '../dynamo';
+
+import { Doctor } from '../entities';
+
+import { Resource } from '../utils';
 
 const ID_PREFIX = 'DOCTOR#';
 
-type Key = 'PK' | 'SK';
-type ItemKey = {
-  [key in Key]: string;
-};
-/* 
-TODO (services):
-- [x] extract service template 
-- [x] add id in attrs
-- [] transform data to include only app relevant attrs
+/* TODO:
+- [] test doctor service
+- [] extract specialization service
+- [] model listing doctors
+- [] model many-to-many /w patients 
+- [] error handling and docs
 */
-function generateDoctorItemKey(doctorId: string): ItemKey {
-  return {
-    PK: `${ID_PREFIX}${doctorId}`,
-    SK: `${ID_PREFIX}${doctorId}`,
-  };
-}
-
 @Injectable()
-export class DoctorsService {
-  async create(createDoctorDto: CreateDoctorDto) {
+export class DoctorsService extends Resource<Doctor> {
+  constructor() {
+    super(Doctor, ID_PREFIX);
+  }
+
+  async create(createDoctorDto: CreateDoctorDto): Promise<Doctor | undefined> {
     const createdAt = new Date();
-    const primaryKey = generateDoctorItemKey(createDoctorDto.id);
+    const primaryKey = this.generateItemKey(createDoctorDto.id);
     /* for fetching tests */
     const GSI1PK = primaryKey.PK;
     const GSI1SK = primaryKey.SK;
@@ -44,58 +41,32 @@ export class DoctorsService {
     const GSI2PK = `SPECIALIZATION#${specialization}`;
     const GSI2SK = `${specialization}#${createDoctorDto.id}`;
 
+    const item = {
+      ...primaryKey,
+      Id: createDoctorDto.id,
+      FirstName: createDoctorDto.firstName,
+      LastName: createDoctorDto.lastName,
+      Specialization: createDoctorDto.specialization,
+      CreatedAt: createdAt.toISOString(),
+      GSI1PK,
+      GSI1SK,
+      GSI2PK,
+      GSI2SK,
+    };
+
     const command = new PutCommand({
       TableName: DATA_TABLE,
-      Item: {
-        ...primaryKey,
-        Id: createDoctorDto.id,
-        FirstName: createDoctorDto.firstName,
-        LastName: createDoctorDto.lastName,
-        Specialization: createDoctorDto.specialization,
-        CreatedAt: createdAt.toISOString(),
-        GSI1PK,
-        GSI1SK,
-        GSI2PK,
-        GSI2SK,
-      },
+      Item: item,
     });
-    const result = await client.send(command);
-    return result;
+    try {
+      await client.send(command);
+      return this.mapToEntity(item);
+    } catch (e) {
+      return undefined;
+    }
   }
 
-  async one(doctorId: string) {
-    const key = generateDoctorItemKey(doctorId);
-    const command = new GetCommand({
-      TableName: DATA_TABLE,
-      Key: key,
-    });
-    const { Item } = await client.send(command);
-    return Item;
-  }
-
-  async update(doctorId: string, updateDoctorDto: UpdateDoctorDto) {
-    const key = generateDoctorItemKey(doctorId);
-    const updateExpressionAndValues = objToUpdateExpression(updateDoctorDto);
-    const command = new UpdateCommand({
-      TableName: DATA_TABLE,
-      Key: key,
-      ...updateExpressionAndValues,
-      ReturnValues: 'ALL_NEW',
-    });
-    const result = await client.send(command);
-    return result;
-  }
-
-  async remove(doctorId: string) {
-    const key = generateDoctorItemKey(doctorId);
-    const command = new DeleteCommand({
-      TableName: DATA_TABLE,
-      Key: key,
-    });
-    const result = await client.send(command);
-    return result;
-  }
-
+  /* TODO: extract to specialization service */
   async addNewSpecialization(specialization: string) {
     const command = new UpdateCommand({
       TableName: DATA_TABLE,
@@ -129,7 +100,6 @@ export class DoctorsService {
   }
 
   /* TODO: generalize lastSeen type */
-  /* and list method */
   async list(
     specialization: string,
     limit: number = 5,
