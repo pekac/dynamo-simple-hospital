@@ -59,3 +59,8 @@ export class ListDoctorsDto {
   @IsInt()
   readonly limit?: number;
 }
+
+export class CreateSpecializationDto {
+  @IsString()
+  specialization: string;
+}
