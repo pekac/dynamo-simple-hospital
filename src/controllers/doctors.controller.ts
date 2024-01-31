@@ -11,13 +11,29 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 
-import { CreateDoctorDto, ListDoctorsDto, UpdateDoctorDto } from '../dtos';
+import {
+  CreateDoctorDto,
+  CreateSpecializationDto,
+  ListDoctorsDto,
+  UpdateDoctorDto,
+} from '../dtos';
 
 import { DoctorsUseCases } from '../use-cases';
 
 @Controller('doctors')
 export class DoctorsController {
   constructor(private doctorsUseCases: DoctorsUseCases) {}
+  /* specializations */
+  @Post('specializations')
+  @UsePipes(new ValidationPipe())
+  createSpecialization(@Body() { specialization }: CreateSpecializationDto) {
+    return this.doctorsUseCases.createSpecialization(specialization);
+  }
+
+  @Get('specializations')
+  getSpecializations() {
+    return this.doctorsUseCases.getSpecializations();
+  }
 
   @Post()
   @UsePipes(new ValidationPipe())

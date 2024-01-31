@@ -9,6 +9,7 @@ export abstract class IDoctorsService {
   ): Promise<string>;
   abstract remove(doctorId: string): Promise<string>;
   abstract getSpecializations(): Promise<string[]>;
+  abstract addNewSpecialization(specialization: string): Promise<string>;
   abstract list(
     startCollection: string,
     limit: number,

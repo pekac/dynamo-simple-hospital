@@ -30,6 +30,14 @@ export class DoctorsUseCases {
     return this.doctorsService.remove(doctorId);
   }
 
+  createSpecialization(specialization: string) {
+    return this.doctorsService.addNewSpecialization(specialization);
+  }
+
+  getSpecializations() {
+    return this.doctorsService.getSpecializations();
+  }
+
   async getDoctorList({
     filterBy = [],
     lastSeen = {

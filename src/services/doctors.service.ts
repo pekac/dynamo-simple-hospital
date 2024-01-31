@@ -8,8 +8,6 @@ import {
 
 import { CreateDoctorDto, LastSeenDoctorDto } from '../dtos';
 
-import { DATA_TABLE, client } from '../dynamo';
-
 import { Doctor } from '../entities';
 
 import { Resource } from '../utils';
@@ -17,10 +15,11 @@ import { Resource } from '../utils';
 const ID_PREFIX = 'DOCTOR#';
 
 /* TODO:
-- [] test doctor service
-- [] extract specialization service
 - [] model listing doctors
 - [] model many-to-many /w patients 
+- [] test doctor service
+- [] update test service /w resource
+- [] extract specialization service
 - [] error handling and docs
 */
 @Injectable()
@@ -55,11 +54,11 @@ export class DoctorsService extends Resource<Doctor> {
     };
 
     const command = new PutCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       Item: item,
     });
     try {
-      await client.send(command);
+      await this.client.send(command);
       return this.mapToEntity(item);
     } catch (e) {
       return undefined;
@@ -69,34 +68,34 @@ export class DoctorsService extends Resource<Doctor> {
   /* TODO: extract to specialization service */
   async addNewSpecialization(specialization: string) {
     const command = new UpdateCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       Key: {
         PK: 'DOCTOR',
-        SK: `SPECIALIZATION`,
+        SK: 'SPECIALIZATION',
       },
-      UpdateExpression: 'Add #specialization :specialization',
+      UpdateExpression: 'ADD #specialization :specialization',
       ExpressionAttributeNames: {
         '#specialization': 'Specializations',
       },
       ExpressionAttributeValues: {
-        ':specialization': specialization.toUpperCase(),
+        ':specialization': new Set([specialization.toUpperCase()]),
       },
       ReturnValues: 'ALL_NEW',
     });
-    const result = await client.send(command);
-    return result;
+    const result = await this.client.send(command);
+    return specialization;
   }
 
   async getSpecializations() {
     const command = new GetCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       Key: {
         PK: 'DOCTOR',
-        SK: `SPECIALIZATION`,
+        SK: 'SPECIALIZATION',
       },
     });
-    const { Item } = await client.send(command);
-    return Item?.Specialization;
+    const { Item } = await this.client.send(command);
+    return Array.from(Item?.Specializations || new Set([]));
   }
 
   /* TODO: generalize lastSeen type */
@@ -106,7 +105,7 @@ export class DoctorsService extends Resource<Doctor> {
     lastSeen: LastSeenDoctorDto,
   ) {
     const command = new QueryCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       IndexName: 'GSI2',
       KeyConditionExpression: '#pk = :pk AND #sk > :sk',
       ExpressionAttributeNames: {
@@ -120,7 +119,7 @@ export class DoctorsService extends Resource<Doctor> {
       Limit: limit,
     });
 
-    const { Items } = await client.send(command);
+    const { Items } = await this.client.send(command);
     return Items;
   }
 }
