@@ -29,8 +29,8 @@ export interface IResource<T> {
 export abstract class Resource<T extends Record<keyof T, any>>
   implements IResource<T>
 {
-  private readonly client: DynamoDBDocumentClient = client;
-  private readonly tableName: string = DATA_TABLE;
+  protected readonly client: DynamoDBDocumentClient = client;
+  protected readonly tableName: string = DATA_TABLE;
   private c: { new (): T };
   pkPrefix: string;
   skPrefix: string;
