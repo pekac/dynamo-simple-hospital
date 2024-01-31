@@ -102,7 +102,7 @@ export class DoctorsService extends Resource<Doctor> {
   async list(
     specialization: string,
     limit: number = 5,
-    lastSeen: LastSeenDoctorDto,
+    lastSeen: string = '#',
   ) {
     const command = new QueryCommand({
       TableName: this.tableName,
@@ -114,12 +114,12 @@ export class DoctorsService extends Resource<Doctor> {
       },
       ExpressionAttributeValues: {
         ':pk': `SPECIALIZATION#${specialization}`,
-        ':sk': `${specialization}#${lastSeen.id}`,
+        ':sk': `${specialization}#${lastSeen}`,
       },
       Limit: limit,
     });
 
     const { Items } = await this.client.send(command);
-    return Items;
+    return Items?.map((item) => this.mapToEntity(item)) as Doctor[];
   }
 }

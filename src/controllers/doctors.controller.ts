@@ -35,15 +35,20 @@ export class DoctorsController {
     return this.doctorsUseCases.getSpecializations();
   }
 
-  @Post()
-  @UsePipes(new ValidationPipe())
-  createDoctor(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.doctorsUseCases.createDoctor(createDoctorDto);
+  @Get('?')
+  getDoctorList(@Query() queryParams: ListDoctorsDto) {
+    return this.doctorsUseCases.getDoctorList(queryParams);
   }
 
   @Get(':id')
   getDoctorById(@Param('id') id: string) {
     return this.doctorsUseCases.getDoctorById(id);
+  }
+
+  @Post()
+  @UsePipes(new ValidationPipe())
+  createDoctor(@Body() createDoctorDto: CreateDoctorDto) {
+    return this.doctorsUseCases.createDoctor(createDoctorDto);
   }
 
   @Put(':id')
@@ -58,10 +63,5 @@ export class DoctorsController {
   @Delete(':id')
   deleteDoctor(@Param('id') doctorId: string) {
     return this.doctorsUseCases.deleteDoctor(doctorId);
-  }
-
-  @Get('?')
-  getDoctorList(@Query() queryParams: ListDoctorsDto) {
-    return this.doctorsUseCases.getDoctorList(queryParams);
   }
 }

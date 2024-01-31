@@ -57,7 +57,7 @@ export class ListDoctorsDto {
 
   @IsOptional()
   @IsInt()
-  readonly limit?: number;
+  readonly limit: number;
 }
 
 export class CreateSpecializationDto {
