@@ -3,8 +3,6 @@ import { Injectable } from '@nestjs/common';
 
 import { CreatePatientDto } from '../dtos';
 
-import { client, DATA_TABLE } from '../dynamo/';
-
 import { Patient } from '../entities/';
 
 import { capitalize, Resource, truncateDateToWeek } from '../utils/';
@@ -44,11 +42,11 @@ export class PatientsService extends Resource<Patient> {
     };
 
     const command = new PutCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       Item: item,
     });
     try {
-      await client.send(command);
+      await this.client.send(command);
       return this.mapToEntity(item);
     } catch (e) {
       return undefined;
@@ -61,7 +59,7 @@ export class PatientsService extends Resource<Patient> {
     lastSeen: string = 'A',
   ): Promise<Patient[]> {
     const command = new QueryCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       IndexName: 'GSI1',
       KeyConditionExpression: '#pk = :pk AND #sk > :sk',
       ExpressionAttributeNames: {
@@ -75,7 +73,7 @@ export class PatientsService extends Resource<Patient> {
       Limit: limit,
     });
 
-    const { Items } = await client.send(command);
+    const { Items } = await this.client.send(command);
     return Items?.map((item) => this.mapToEntity(item)) as Patient[];
   }
 
@@ -85,7 +83,7 @@ export class PatientsService extends Resource<Patient> {
     lastSeen: string = new Date().toISOString(),
   ): Promise<Patient[]> {
     const command = new QueryCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       IndexName: 'GSI2',
       KeyConditionExpression: '#pk = :pk AND #sk < :sk',
       ExpressionAttributeNames: {
@@ -100,7 +98,7 @@ export class PatientsService extends Resource<Patient> {
       Limit: limit,
     });
 
-    const { Items } = await client.send(command);
+    const { Items } = await this.client.send(command);
     return Items?.map((item) => this.mapToEntity(item)) as Patient[];
   }
 }
