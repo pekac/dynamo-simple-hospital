@@ -33,15 +33,6 @@ export class UpdateDoctorDto {
   specialization: string;
 }
 
-/* TODO: generalize this crapo */
-export class LastSeenDoctorDto {
-  @IsString()
-  readonly id: string;
-
-  @IsString()
-  readonly collection: string;
-}
-
 export class ListDoctorsDto {
   @IsOptional()
   @IsArray()
@@ -50,14 +41,16 @@ export class ListDoctorsDto {
   readonly filterBy?: string[];
 
   @IsOptional()
-  @IsObject()
-  @ValidateNested()
-  @Type(() => LastSeenDoctorDto)
-  readonly lastSeen?: LastSeenDoctorDto;
+  @IsString()
+  readonly lastSeen?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly collection?: string;
 
   @IsOptional()
   @IsInt()
-  readonly limit: number;
+  readonly limit?: number;
 }
 
 export class CreateSpecializationDto {

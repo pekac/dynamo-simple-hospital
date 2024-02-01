@@ -59,7 +59,9 @@ interface ICrossPartitionEntityList<T> {
   updateCollection: (c: string) => { collection: string; lastSeen?: string };
 }
 
-export async function crossPartitionEntityList<T>({
+type Identity = { id: string };
+
+export async function crossPartitionEntityList<T extends Identity>({
   collection,
   lastSeen,
   limit: totalLimit,
@@ -77,6 +79,8 @@ export async function crossPartitionEntityList<T>({
     for (const item of items) {
       entityList.push(item);
     }
+
+    lastSeen = entityList[entityList.length - 1]?.id || lastSeen;
 
     if (items.length < totalLimit) {
       ({ collection, lastSeen } = updateCollection(collection));

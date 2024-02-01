@@ -6,7 +6,7 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { CreateDoctorDto, LastSeenDoctorDto } from '../dtos';
+import { CreateDoctorDto } from '../dtos';
 
 import { Doctor } from '../entities';
 
@@ -102,7 +102,7 @@ export class DoctorsService extends Resource<Doctor> {
   async list(
     specialization: string,
     limit: number = 5,
-    lastSeen: string = '#',
+    lastSeen: string = '$',
   ) {
     const command = new QueryCommand({
       TableName: this.tableName,

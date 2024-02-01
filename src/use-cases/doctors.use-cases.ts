@@ -40,35 +40,39 @@ export class DoctorsUseCases {
 
   async getDoctorList({
     filterBy = [],
-    lastSeen = {
-      id: '',
-      collection: '',
-    },
+    lastSeen = '$',
+    collection: lastCollection = '',
     limit = 5,
   }: ListDoctorsDto): Promise<Doctor[]> {
     const specializations: string[] =
       (await this.doctorsService.getSpecializations()) || [];
 
-    const collections =
+    const collections = (
       filterBy.length > 0
-        ? arraySubset(specializations, filterBy)
-        : specializations;
+        ? arraySubset(
+            specializations,
+            filterBy.map((c) => c.toUpperCase()),
+          )
+        : specializations
+    ).sort();
 
     const shouldContinue = (col: string) => collections.includes(col);
 
     const getItems = (col: string, limit: number, lastSeen: string) =>
       this.doctorsService.list(col, limit, lastSeen);
 
-    const updateCollection = (col: string, lastSeen: string = '@') => {
+    const updateCollection = (col: string, lastSeen: string = '$') => {
       const index = collections.indexOf(col);
       return {
-        collection: index < collections.length ? collections[index] : 'THE_END',
+        collection:
+          index < collections.length - 1 ? collections[index + 1] : 'THE_END',
         lastSeen,
       };
     };
 
     return crossPartitionEntityList({
-      collection: lastSeen.collection || collections[0],
+      collection: lastCollection?.toUpperCase() || collections[0],
+      lastSeen: lastSeen,
       limit,
       getItems,
       shouldContinue,
