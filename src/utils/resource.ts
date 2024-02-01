@@ -74,7 +74,7 @@ export abstract class Resource<T extends Record<keyof T, any>>
     return transformed as T;
   }
 
-  async one(...args: [string, string]): Promise<T | undefined> {
+  async one(...args: [string, string?]): Promise<T | undefined> {
     const key = this.generateItemKey(...args);
     const command = new GetCommand({
       TableName: this.tableName,
@@ -105,7 +105,7 @@ export abstract class Resource<T extends Record<keyof T, any>>
     return this.mapToEntity(result.Attributes) as T;
   }
 
-  async remove(...args: [string, string]): Promise<any> {
+  async remove(...args: [string, string?]): Promise<any> {
     const key = this.generateItemKey(...args);
     const command = new DeleteCommand({
       TableName: this.tableName,

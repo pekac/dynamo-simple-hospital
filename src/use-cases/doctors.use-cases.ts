@@ -9,7 +9,7 @@ import {
 
 import { crossPartitionEntityList } from '../dynamo';
 
-import { Doctor } from '../entities';
+import { Doctor, Patient } from '../entities';
 
 import { IDoctorsService } from '../interfaces';
 
@@ -90,5 +90,13 @@ export class DoctorsUseCases {
     addPatientDto: AddPatientToDoctorDto,
   ) {
     return this.doctorsService.addPatient(doctorId, addPatientDto);
+  }
+
+  listPatients(
+    doctorId: string,
+    limit: number = 5,
+    lastSeen: string = '$',
+  ): Promise<Patient[]> {
+    return this.doctorsService.listPatients(doctorId, limit, lastSeen);
   }
 }

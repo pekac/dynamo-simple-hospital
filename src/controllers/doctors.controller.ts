@@ -16,6 +16,7 @@ import {
   CreateDoctorDto,
   CreateSpecializationDto,
   ListDoctorsDto,
+  ListPatientsForDoctorDto,
   UpdateDoctorDto,
 } from '../dtos';
 
@@ -73,5 +74,17 @@ export class DoctorsController {
     @Body() addPatientDto: AddPatientToDoctorDto,
   ) {
     return this.doctorsUseCases.addPatientToDoctor(doctorId, addPatientDto);
+  }
+
+  @Get(':id/patients')
+  listPatients(
+    @Param('id') doctorId: string,
+    @Query() queryParams: ListPatientsForDoctorDto,
+  ) {
+    return this.doctorsUseCases.listPatients(
+      doctorId,
+      queryParams.limit,
+      queryParams.lastSeen,
+    );
   }
 }

@@ -4,6 +4,8 @@ import {
   UpdateDoctorDto,
 } from '../dtos/';
 
+import { Patient } from '../entities';
+
 export abstract class IDoctorsService {
   abstract create(createDoctorDto: CreateDoctorDto): Promise<string>;
   abstract one(doctorId: string): Promise<string>;
@@ -23,4 +25,9 @@ export abstract class IDoctorsService {
     doctorId: string,
     addPatientDto: AddPatientToDoctorDto,
   ): Promise<any>;
+  abstract listPatients(
+    doctorId: string,
+    limit: number,
+    lastSeen: string,
+  ): Promise<Patient[]>;
 }

@@ -11,6 +11,16 @@ export class AddPatientToDoctorDto {
   lastName: string;
 }
 
+export class ListPatientsForDoctorDto {
+  @IsOptional()
+  @IsString()
+  readonly lastSeen?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly limit?: number;
+}
+
 export class CreatePatientDto {
   @IsString()
   id: string;

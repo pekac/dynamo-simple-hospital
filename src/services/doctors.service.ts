@@ -8,7 +8,7 @@ import {
 
 import { AddPatientToDoctorDto, CreateDoctorDto } from '../dtos';
 
-import { Doctor } from '../entities';
+import { Doctor, Patient } from '../entities';
 
 import { ID_PREFIX as PATIENT_ID_PREFIX } from './patients.service';
 
@@ -19,7 +19,7 @@ const ID_PREFIX = 'DOCTOR#';
 /* TODO:
 - [x] model listing doctors
 - [x] test doctor service
-- [] model many-to-many /w patients 
+- [x] model many-to-many /w patients 
 - [] update test service /w resource
 - [] extract specialization service?
 - [] standardize api response
@@ -136,18 +136,25 @@ export class DoctorsService extends Resource<Doctor> {
     doctorId: string,
     addPatientDto: AddPatientToDoctorDto,
   ): Promise<any> {
-    const { PK: DoctorPK } = this.generateItemKey(doctorId);
-    const ActorSK = `${PATIENT_ID_PREFIX}#${addPatientDto.id}`;
+    const doctor = await this.one(doctorId);
+    if (!doctor) {
+      // throw not found err
+      return;
+    }
 
-    const GSI3PK = DoctorPK;
-    const GSI3SK = ActorSK;
+    const { PK: DoctorPK } = this.generateItemKey(doctorId);
+    const PatientPK = `${PATIENT_ID_PREFIX}#${addPatientDto.id}`;
 
     const item = {
-      ...addPatientDto,
+      PatientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
+      PatientId: addPatientDto.id,
+      DoctorName: `${doctor?.firstName} ${doctor?.firstName}`,
+      Specialization: doctor?.specialization,
+      DoctorId: doctor.id,
       PK: DoctorPK,
-      SK: ActorSK,
-      GSI3PK,
-      GSI3SK,
+      SK: PatientPK,
+      GSI3PK: PatientPK,
+      GSI3SK: DoctorPK,
     };
 
     const command = new PutCommand({
@@ -156,9 +163,38 @@ export class DoctorsService extends Resource<Doctor> {
     });
     try {
       await this.client.send(command);
-      return addPatientDto;
+      return item;
     } catch (e) {
       return undefined;
     }
+  }
+
+  async listPatients(
+    doctorId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Patient[]> {
+    const PK = `DOCTOR#${doctorId}`;
+    const SK = lastSeen === '$' ? PK : `PATIENT#${lastSeen}`;
+
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'PK',
+        '#sk': 'SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      Limit: limit,
+    });
+
+    const { Items } = await this.client.send(command);
+    return Items?.map((p) => {
+      const [firstName, lastName] = p.PatientName.split(' ');
+      return new Patient(p.PatientId, firstName, lastName);
+    }) as Patient[];
   }
 }
