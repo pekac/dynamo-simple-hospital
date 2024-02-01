@@ -7,7 +7,7 @@ import { Patient } from '../entities/';
 
 import { capitalize, Resource, truncateDateToWeek } from '../utils/';
 
-const ID_PREFIX = 'PATIENT#';
+export const ID_PREFIX = 'PATIENT#';
 
 @Injectable()
 export class PatientsService extends Resource<Patient> {
@@ -27,6 +27,9 @@ export class PatientsService extends Resource<Patient> {
     const createdAt = new Date();
     const GSI2PK = `${ID_PREFIX}${truncateDateToWeek(createdAt).toISOString()}`;
     const GSI2SK = `${ID_PREFIX}${createdAt.toISOString()}`;
+    /* for listing doctors */
+    const GSI3PK = primaryKey.PK;
+    const GSI3SK = primaryKey.SK;
 
     const item = {
       ...primaryKey,
@@ -39,6 +42,8 @@ export class PatientsService extends Resource<Patient> {
       GSI1SK,
       GSI2PK,
       GSI2SK,
+      GSI3PK,
+      GSI3SK,
     };
 
     const command = new PutCommand({

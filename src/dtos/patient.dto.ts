@@ -1,5 +1,16 @@
 import { IsString, IsNumber, IsOptional, IsInt } from 'class-validator';
 
+export class AddPatientToDoctorDto {
+  @IsString()
+  id: string;
+
+  @IsString()
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+}
+
 export class CreatePatientDto {
   @IsString()
   id: string;
@@ -9,7 +20,6 @@ export class CreatePatientDto {
 
   @IsString()
   lastName: string;
-
   @IsNumber()
   age: number;
 }

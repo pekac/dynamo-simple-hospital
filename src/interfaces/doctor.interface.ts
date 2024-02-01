@@ -1,4 +1,8 @@
-import { CreateDoctorDto, UpdateDoctorDto } from '../dtos/';
+import {
+  AddPatientToDoctorDto,
+  CreateDoctorDto,
+  UpdateDoctorDto,
+} from '../dtos/';
 
 export abstract class IDoctorsService {
   abstract create(createDoctorDto: CreateDoctorDto): Promise<string>;
@@ -14,5 +18,9 @@ export abstract class IDoctorsService {
     startCollection: string,
     limit: number,
     lastSeen: string,
+  ): Promise<any>;
+  abstract addPatient(
+    doctorId: string,
+    addPatientDto: AddPatientToDoctorDto,
   ): Promise<any>;
 }

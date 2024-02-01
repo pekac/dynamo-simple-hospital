@@ -6,20 +6,24 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { CreateDoctorDto } from '../dtos';
+import { AddPatientToDoctorDto, CreateDoctorDto } from '../dtos';
 
 import { Doctor } from '../entities';
+
+import { ID_PREFIX as PATIENT_ID_PREFIX } from './patients.service';
 
 import { Resource } from '../utils';
 
 const ID_PREFIX = 'DOCTOR#';
 
 /* TODO:
-- [] model listing doctors
+- [x] model listing doctors
+- [x] test doctor service
 - [] model many-to-many /w patients 
-- [] test doctor service
 - [] update test service /w resource
-- [] extract specialization service
+- [] extract specialization service?
+- [] standardize api response
+- [] standardize pagination
 - [] error handling and docs
 */
 @Injectable()
@@ -40,6 +44,10 @@ export class DoctorsService extends Resource<Doctor> {
     const GSI2PK = `SPECIALIZATION#${specialization}`;
     const GSI2SK = `${specialization}#${createDoctorDto.id}`;
 
+    /* for listing patients */
+    const GSI3PK = primaryKey.PK;
+    const GSI3SK = primaryKey.SK;
+
     const item = {
       ...primaryKey,
       Id: createDoctorDto.id,
@@ -51,6 +59,8 @@ export class DoctorsService extends Resource<Doctor> {
       GSI1SK,
       GSI2PK,
       GSI2SK,
+      GSI3PK,
+      GSI3SK,
     };
 
     const command = new PutCommand({
@@ -98,7 +108,6 @@ export class DoctorsService extends Resource<Doctor> {
     return Array.from(Item?.Specializations || new Set([]));
   }
 
-  /* TODO: generalize lastSeen type */
   async list(
     specialization: string,
     limit: number = 5,
@@ -121,5 +130,35 @@ export class DoctorsService extends Resource<Doctor> {
 
     const { Items } = await this.client.send(command);
     return Items?.map((item) => this.mapToEntity(item)) as Doctor[];
+  }
+
+  async addPatient(
+    doctorId: string,
+    addPatientDto: AddPatientToDoctorDto,
+  ): Promise<any> {
+    const { PK: DoctorPK } = this.generateItemKey(doctorId);
+    const ActorSK = `${PATIENT_ID_PREFIX}#${addPatientDto.id}`;
+
+    const GSI3PK = DoctorPK;
+    const GSI3SK = ActorSK;
+
+    const item = {
+      ...addPatientDto,
+      PK: DoctorPK,
+      SK: ActorSK,
+      GSI3PK,
+      GSI3SK,
+    };
+
+    const command = new PutCommand({
+      TableName: this.tableName,
+      Item: item,
+    });
+    try {
+      await this.client.send(command);
+      return addPatientDto;
+    } catch (e) {
+      return undefined;
+    }
   }
 }

@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 
 import {
+  AddPatientToDoctorDto,
   CreateDoctorDto,
   CreateSpecializationDto,
   ListDoctorsDto,
@@ -63,5 +64,14 @@ export class DoctorsController {
   @Delete(':id')
   deleteDoctor(@Param('id') doctorId: string) {
     return this.doctorsUseCases.deleteDoctor(doctorId);
+  }
+
+  @Post(':id/patients')
+  @UsePipes(new ValidationPipe())
+  addPatientToDoctor(
+    @Param('id') doctorId: string,
+    @Body() addPatientDto: AddPatientToDoctorDto,
+  ) {
+    return this.doctorsUseCases.addPatientToDoctor(doctorId, addPatientDto);
   }
 }

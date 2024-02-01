@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateDoctorDto, ListDoctorsDto, UpdateDoctorDto } from '../dtos';
+import {
+  AddPatientToDoctorDto,
+  CreateDoctorDto,
+  ListDoctorsDto,
+  UpdateDoctorDto,
+} from '../dtos';
 
 import { crossPartitionEntityList } from '../dynamo';
 
@@ -78,5 +83,12 @@ export class DoctorsUseCases {
       shouldContinue,
       updateCollection,
     });
+  }
+
+  async addPatientToDoctor(
+    doctorId: string,
+    addPatientDto: AddPatientToDoctorDto,
+  ) {
+    return this.doctorsService.addPatient(doctorId, addPatientDto);
   }
 }
