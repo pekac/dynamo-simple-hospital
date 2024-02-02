@@ -25,6 +25,10 @@ export abstract class IDoctorsService {
     doctorId: string,
     addPatientDto: AddPatientToDoctorDto,
   ): Promise<any>;
+  abstract removePatientFromDoctor(
+    doctorId: string,
+    patientId: string,
+  ): Promise<any>;
   abstract listPatients(
     doctorId: string,
     limit: number,

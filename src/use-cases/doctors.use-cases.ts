@@ -85,11 +85,12 @@ export class DoctorsUseCases {
     });
   }
 
-  async addPatientToDoctor(
-    doctorId: string,
-    addPatientDto: AddPatientToDoctorDto,
-  ) {
+  addPatientToDoctor(doctorId: string, addPatientDto: AddPatientToDoctorDto) {
     return this.doctorsService.addPatient(doctorId, addPatientDto);
+  }
+
+  removePatientFromDoctor(doctorId: string, patientId: string) {
+    return this.doctorsService.removePatientFromDoctor(doctorId, patientId);
   }
 
   listPatients(

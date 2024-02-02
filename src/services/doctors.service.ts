@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  DeleteCommand,
   GetCommand,
   PutCommand,
   QueryCommand,
@@ -143,7 +144,7 @@ export class DoctorsService extends Resource<Doctor> {
     }
 
     const { PK: DoctorPK } = this.generateItemKey(doctorId);
-    const PatientPK = `${PATIENT_ID_PREFIX}#${addPatientDto.id}`;
+    const PatientPK = `${PATIENT_ID_PREFIX}${addPatientDto.id}`;
 
     const item = {
       PatientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
@@ -169,13 +170,25 @@ export class DoctorsService extends Resource<Doctor> {
     }
   }
 
+  async removePatientFromDoctor(doctorId: string, patientId: string) {
+    const { PK: DoctorPK } = this.generateItemKey(doctorId);
+    const PatientPK = `${PATIENT_ID_PREFIX}${patientId}`;
+
+    const command = new DeleteCommand({
+      TableName: this.tableName,
+      Key: { PK: DoctorPK, SK: PatientPK },
+    });
+    const result = await this.client.send(command);
+    return result;
+  }
+
   async listPatients(
     doctorId: string,
     limit: number = 20,
     lastSeen: string = '$',
   ): Promise<Patient[]> {
     const PK = `DOCTOR#${doctorId}`;
-    const SK = lastSeen === '$' ? PK : `PATIENT#${lastSeen}`;
+    const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
 
     const command = new QueryCommand({
       TableName: this.tableName,

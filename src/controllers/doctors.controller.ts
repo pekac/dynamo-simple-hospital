@@ -87,4 +87,12 @@ export class DoctorsController {
       queryParams.lastSeen,
     );
   }
+
+  @Delete(':doctorId/patients/:patientId')
+  removePatientFromDoctor(
+    @Param('doctorId') doctorId: string,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.doctorsUseCases.removePatientFromDoctor(doctorId, patientId);
+  }
 }
