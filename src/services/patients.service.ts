@@ -3,16 +3,16 @@ import { Injectable } from '@nestjs/common';
 
 import { CreatePatientDto } from '../dtos';
 
-import { Patient } from '../entities/';
+import { Doctor, Patient } from '../entities/';
 
 import { capitalize, Resource, truncateDateToWeek } from '../utils/';
 
-export const ID_PREFIX = 'PATIENT#';
+export const PATIENT_ID_PREFIX = 'PATIENT#';
 
 @Injectable()
 export class PatientsService extends Resource<Patient> {
   constructor() {
-    super(Patient, ID_PREFIX);
+    super(Patient, PATIENT_ID_PREFIX);
   }
 
   async create(
@@ -21,12 +21,12 @@ export class PatientsService extends Resource<Patient> {
     const primaryKey = this.generateItemKey(createPatientDto.id);
     /* list by last name */
     const firstLetter = createPatientDto.lastName.charAt(0);
-    const GSI1PK = `${ID_PREFIX}${capitalize(firstLetter)}`;
-    const GSI1SK = `${ID_PREFIX}${createPatientDto.lastName.toUpperCase()}`;
+    const GSI1PK = `${PATIENT_ID_PREFIX}${capitalize(firstLetter)}`;
+    const GSI1SK = `${PATIENT_ID_PREFIX}${createPatientDto.lastName.toUpperCase()}`;
     /* list by created at */
     const createdAt = new Date();
-    const GSI2PK = `${ID_PREFIX}${truncateDateToWeek(createdAt).toISOString()}`;
-    const GSI2SK = `${ID_PREFIX}${createdAt.toISOString()}`;
+    const GSI2PK = `${PATIENT_ID_PREFIX}${truncateDateToWeek(createdAt).toISOString()}`;
+    const GSI2SK = `${PATIENT_ID_PREFIX}${createdAt.toISOString()}`;
     /* for listing doctors */
     const GSI3PK = primaryKey.PK;
     const GSI3SK = primaryKey.SK;
@@ -72,8 +72,8 @@ export class PatientsService extends Resource<Patient> {
         '#sk': 'GSI1SK',
       },
       ExpressionAttributeValues: {
-        ':pk': `${ID_PREFIX}${collection}`,
-        ':sk': `${ID_PREFIX}${lastSeen}`,
+        ':pk': `${PATIENT_ID_PREFIX}${collection}`,
+        ':sk': `${PATIENT_ID_PREFIX}${lastSeen}`,
       },
       Limit: limit,
     });
@@ -96,8 +96,8 @@ export class PatientsService extends Resource<Patient> {
         '#sk': 'GSI2SK',
       },
       ExpressionAttributeValues: {
-        ':pk': `${ID_PREFIX}${collection}`,
-        ':sk': `${ID_PREFIX}${lastSeen}`,
+        ':pk': `${PATIENT_ID_PREFIX}${collection}`,
+        ':sk': `${PATIENT_ID_PREFIX}${lastSeen}`,
       },
       ScanIndexForward: false,
       Limit: limit,
@@ -105,5 +105,35 @@ export class PatientsService extends Resource<Patient> {
 
     const { Items } = await this.client.send(command);
     return Items?.map((item) => this.mapToEntity(item)) as Patient[];
+  }
+
+  async listDoctors(
+    patientId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Doctor[]> {
+    const PK = `${PATIENT_ID_PREFIX}${patientId}`;
+    const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
+
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'GSI3',
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'GSI3PK',
+        '#sk': 'GSI3SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      Limit: limit,
+    });
+
+    const { Items } = await this.client.send(command);
+    return Items?.map((d) => {
+      const [firstName, lastName] = d.DoctorName.split(' ');
+      return new Doctor(d.DoctorId, firstName, lastName, d.Specialization);
+    }) as Doctor[];
   }
 }

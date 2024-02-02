@@ -11,11 +11,11 @@ import { AddPatientToDoctorDto, CreateDoctorDto } from '../dtos';
 
 import { Doctor, Patient } from '../entities';
 
-import { ID_PREFIX as PATIENT_ID_PREFIX } from './patients.service';
+import { PATIENT_ID_PREFIX } from './patients.service';
 
 import { Resource } from '../utils';
 
-const ID_PREFIX = 'DOCTOR#';
+export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 
 /* TODO:
 - [x] model listing doctors
@@ -30,7 +30,7 @@ const ID_PREFIX = 'DOCTOR#';
 @Injectable()
 export class DoctorsService extends Resource<Doctor> {
   constructor() {
-    super(Doctor, ID_PREFIX);
+    super(Doctor, DOCTOR_ID_PREFIX);
   }
 
   async create(createDoctorDto: CreateDoctorDto): Promise<Doctor | undefined> {
@@ -187,7 +187,7 @@ export class DoctorsService extends Resource<Doctor> {
     limit: number = 20,
     lastSeen: string = '$',
   ): Promise<Patient[]> {
-    const PK = `DOCTOR#${doctorId}`;
+    const PK = this.generateItemKey(doctorId).PK;
     const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
 
     const command = new QueryCommand({

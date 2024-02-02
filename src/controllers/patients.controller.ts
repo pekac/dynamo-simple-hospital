@@ -16,6 +16,7 @@ import {
   CreateTestDto,
   ListPatientTestsDto,
   ListPatientsDto,
+  ListPatientsForDoctorDto,
   UpdatePatientDto,
 } from '../dtos/';
 
@@ -85,5 +86,17 @@ export class PatientsController {
     @Param('testId') testId: string,
   ) {
     return this.patientsUseCase.deleteTest(patientId, testId);
+  }
+
+  @Get(':id/doctors')
+  listDoctors(
+    @Param('id') patientId: string,
+    @Query() queryParams: ListPatientsForDoctorDto,
+  ) {
+    return this.patientsUseCase.listDoctors(
+      patientId,
+      queryParams.limit,
+      queryParams.lastSeen,
+    );
   }
 }

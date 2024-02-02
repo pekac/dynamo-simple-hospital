@@ -22,4 +22,9 @@ export abstract class IPatientsService {
     limit: number,
     lastSeen: string,
   ): Promise<Patient[]>;
+  abstract listDoctors(
+    patientId: string,
+    limit: number,
+    lastSeen: string,
+  ): Promise<Patient[]>;
 }

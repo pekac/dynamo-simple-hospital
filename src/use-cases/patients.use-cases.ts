@@ -131,4 +131,8 @@ export class PatientsUseCases {
   ) {
     return this.testsService.listTestsForPatient(patientId, lastSeen, limit);
   }
+
+  listDoctors(patientId: string, limit: number = 3, lastSeen: string = '$') {
+    return this.patientsService.listDoctors(patientId, limit, lastSeen);
+  }
 }
