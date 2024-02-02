@@ -79,7 +79,6 @@ export async function updatePatientsWithGSI3(client: DynamoDBDocumentClient) {
     try {
       const patients = await listPatients(client, lastSeen, limit);
       const updateRequests = [];
-
       for (const patient of patients) {
         const request = {
           PutRequest: {
