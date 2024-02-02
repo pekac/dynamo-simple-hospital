@@ -20,10 +20,6 @@ export interface IResource<T> {
   one(pk: string, sk: string): Promise<T | undefined>;
   update(pk: string, sk: string, updateDto: Partial<T>): Promise<T>;
   remove(pk: string, sk: string): Promise<string>;
-  generateItemKey(pk: string, sk: string): ItemKey;
-  mapToEntity(
-    entity: Record<string, number | string> | undefined,
-  ): T | undefined;
 }
 
 export abstract class Resource<T extends Record<keyof T, any>>
@@ -43,14 +39,14 @@ export abstract class Resource<T extends Record<keyof T, any>>
 
   abstract create(createDto: T): Promise<T | undefined>;
 
-  generateItemKey(pk: string, sk: string = pk): ItemKey {
+  protected generateItemKey(pk: string, sk: string = pk): ItemKey {
     return {
       PK: `${this.pkPrefix}${pk}`,
       SK: `${this.skPrefix}${sk}`,
     };
   }
 
-  mapToEntity(
+  protected mapToEntity(
     entity: Record<string, number | string> | undefined = {},
   ): T | undefined {
     const keys: string[] = Object.keys(entity);
