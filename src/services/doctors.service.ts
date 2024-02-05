@@ -21,7 +21,7 @@ export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 - [x] model listing doctors
 - [x] test doctor service
 - [x] model many-to-many /w patients 
-- [] update test service /w resource
+- [x] update test service /w resource
 - [] extract specialization service?
 - [] standardize api response
 - [] standardize pagination
@@ -96,7 +96,8 @@ export class DoctorsService
       },
       ReturnValues: 'ALL_NEW',
     });
-    const result = await this.client.send(command);
+
+    await this.client.send(command);
     return specialization;
   }
 
@@ -119,7 +120,7 @@ export class DoctorsService
   ) {
     const command = new QueryCommand({
       TableName: this.tableName,
-      IndexName: 'GSI2',
+      IndexName: 'GSI1',
       KeyConditionExpression: '#pk = :pk AND #sk > :sk',
       ExpressionAttributeNames: {
         '#pk': 'GSI2PK',

@@ -1,83 +1,63 @@
 import { Injectable } from '@nestjs/common';
-import {
-  DeleteCommand,
-  GetCommand,
-  PutCommand,
-  QueryCommand,
-} from '@aws-sdk/lib-dynamodb';
+import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 const KSUID = require('ksuid');
 
-import { CreateTestDto, GetTestDto } from '../dtos/';
+import { Test } from '../entities/';
 
-import { DATA_TABLE, client } from '../dynamo/';
+import { ITestsService } from '../interfaces';
 
-type Key = 'PK' | 'SK';
-type ItemKey = {
-  [key in Key]: string;
-};
+import { DOCTOR_ID_PREFIX } from './doctors.service';
+import { PATIENT_ID_PREFIX } from './patients.service';
 
-function generateTestItemKey(patientId: string, ksuid: string): ItemKey {
-  return {
-    PK: `PATIENT#${patientId}`,
-    SK: `#TEST#${ksuid}`,
-  };
-}
+import { Resource } from '../utils';
+
+export const TEST_PK_PREFIX = PATIENT_ID_PREFIX;
+export const TEST_SK_PREFIX = '#TEST#';
 
 @Injectable()
-export class TestsService {
-  async create(patientId: string, createTestDto: CreateTestDto) {
+export class TestsService extends Resource<Test> implements ITestsService {
+  constructor() {
+    super(Test, TEST_PK_PREFIX, TEST_SK_PREFIX);
+  }
+
+  async create(
+    createTestDto: Test,
+    patientId: string,
+  ): Promise<Test | undefined> {
     const createdAt = new Date();
     const ksuid = KSUID.randomSync(createdAt).string;
-    const primaryKey = generateTestItemKey(patientId, ksuid);
+    const primaryKey = this.generateItemKey(patientId, ksuid);
     /* for fetching by doctor id */
-    const GSI1PK = `DOCTOR#${createTestDto.doctorId}`;
+    const GSI1PK = `${DOCTOR_ID_PREFIX}${createTestDto.doctorId}`;
     const GSI1SK = primaryKey.SK;
 
+    const item = {
+      ...primaryKey,
+      Id: ksuid,
+      Code: createTestDto.code,
+      Type: createTestDto.type,
+      CreatedAt: createdAt.toISOString(),
+      GSI1PK,
+      GSI1SK,
+    };
+
     const command = new PutCommand({
-      TableName: DATA_TABLE,
-      Item: {
-        ...primaryKey,
-        Id: ksuid,
-        Code: createTestDto.code,
-        Type: createTestDto.type,
-        CreatedAt: createdAt.toISOString(),
-        GSI1PK,
-        GSI1SK,
-      },
+      TableName: this.tableName,
+      Item: item,
     });
-    const result = await client.send(command);
-    return result;
-  }
-
-  async one(patientId: string, testId: string) {
-    const key = generateTestItemKey(patientId, testId);
-    const command = new GetCommand({
-      TableName: DATA_TABLE,
-      Key: key,
-    });
-    const { Item } = await client.send(command);
-    return Item;
-  }
-
-  async remove(patientId: string, testId: string) {
-    const key = generateTestItemKey(patientId, testId);
-    const command = new DeleteCommand({
-      TableName: DATA_TABLE,
-      Key: key,
-    });
-    const result = await client.send(command);
-    return result;
+    await this.client.send(command);
+    return this.mapToEntity(item);
   }
 
   async listTestsForPatient(
     patientId: string,
-    lastSeen: string = '$',
     limit: number = 20,
-  ): Promise<GetTestDto[]> {
-    const PK = `PATIENT#${patientId}`;
-    const SK = lastSeen === '$' ? PK : `#TEST#${lastSeen}`;
+    lastSeen: string = '$',
+  ): Promise<Test[]> {
+    const PK = `${TEST_PK_PREFIX}${patientId}`;
+    const SK = lastSeen === '$' ? PK : `${TEST_SK_PREFIX}${lastSeen}`;
     const command = new QueryCommand({
-      TableName: DATA_TABLE,
+      TableName: this.tableName,
       KeyConditionExpression: '#pk = :pk AND #sk < :sk',
       ExpressionAttributeNames: {
         '#pk': 'PK',
@@ -91,7 +71,34 @@ export class TestsService {
       Limit: limit,
     });
 
-    const { Items } = await client.send(command);
-    return Items as GetTestDto[];
+    const { Items } = await this.client.send(command);
+    return Items as Test[];
+  }
+
+  async listTestsForDoctor(
+    doctorId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Test[]> {
+    const PK = `${DOCTOR_ID_PREFIX}${doctorId}`;
+    const SK = lastSeen === '$' ? PK : `${TEST_SK_PREFIX}${lastSeen}`;
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'GSI1',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'PK',
+        '#sk': 'SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
+
+    const { Items } = await this.client.send(command);
+    return Items as Test[];
   }
 }
