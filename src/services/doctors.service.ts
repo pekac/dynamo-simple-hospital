@@ -1,11 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  DeleteCommand,
-  GetCommand,
-  PutCommand,
-  QueryCommand,
-  UpdateCommand,
-} from '@aws-sdk/lib-dynamodb';
+import { DeleteCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 import { Doctor, Patient } from '../entities';
 
@@ -22,7 +16,7 @@ export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 - [x] test doctor service
 - [x] model many-to-many /w patients 
 - [x] update test service /w resource
-- [] extract specialization service?
+- [x] extract specialization service?
 - [] standardize api response
 - [] standardize pagination
 - [] error handling and docs
@@ -79,48 +73,14 @@ export class DoctorsService
     }
   }
 
-  /* TODO: extract to specialization service */
-  async addNewSpecialization(specialization: string) {
-    const command = new UpdateCommand({
-      TableName: this.tableName,
-      Key: {
-        PK: 'DOCTOR',
-        SK: 'SPECIALIZATION',
-      },
-      UpdateExpression: 'ADD #specialization :specialization',
-      ExpressionAttributeNames: {
-        '#specialization': 'Specializations',
-      },
-      ExpressionAttributeValues: {
-        ':specialization': new Set([specialization.toUpperCase()]),
-      },
-      ReturnValues: 'ALL_NEW',
-    });
-
-    await this.client.send(command);
-    return specialization;
-  }
-
-  async getSpecializations(): Promise<string[]> {
-    const command = new GetCommand({
-      TableName: this.tableName,
-      Key: {
-        PK: 'DOCTOR',
-        SK: 'SPECIALIZATION',
-      },
-    });
-    const { Item } = await this.client.send(command);
-    return Array.from(Item?.Specializations || new Set([]));
-  }
-
   async list(
     specialization: string,
     limit: number = 5,
     lastSeen: string = '$',
-  ) {
+  ): Promise<Doctor[]> {
     const command = new QueryCommand({
       TableName: this.tableName,
-      IndexName: 'GSI1',
+      IndexName: 'GSI2',
       KeyConditionExpression: '#pk = :pk AND #sk > :sk',
       ExpressionAttributeNames: {
         '#pk': 'GSI2PK',
@@ -133,8 +93,8 @@ export class DoctorsService
       Limit: limit,
     });
 
-    const { Items } = await this.client.send(command);
-    return Items?.map((item) => this.mapToEntity(item)) as Doctor[];
+    const { Items = [] } = await this.client.send(command);
+    return Items.map((item) => this.mapToEntity(item));
   }
 
   async addPatient(
@@ -207,11 +167,11 @@ export class DoctorsService
       },
       Limit: limit,
     });
+    const { Items = [] } = await this.client.send(command);
 
-    const { Items } = await this.client.send(command);
-    return Items?.map((p) => {
+    return Items.map((p) => {
       const [firstName, lastName] = p.PatientName.split(' ');
       return new Patient(p.PatientId, firstName, lastName);
-    }) as Patient[];
+    });
   }
 }

@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 
 import { DoctorsController } from '../controllers';
 
-import { IDoctorsService } from '../interfaces';
+import { IDoctorsService, ISpecializationService } from '../interfaces';
 
-import { DoctorsService } from '../services';
+import { DoctorsService, SpecializationService } from '../services';
 
 import { DoctorsUseCases } from '../use-cases';
 
@@ -13,6 +13,7 @@ import { DoctorsUseCases } from '../use-cases';
   providers: [
     DoctorsUseCases,
     { provide: IDoctorsService, useClass: DoctorsService },
+    { provide: ISpecializationService, useClass: SpecializationService },
   ],
 })
 export class DoctorsModule {}

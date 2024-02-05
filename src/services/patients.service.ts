@@ -134,10 +134,10 @@ export class PatientsService
       Limit: limit,
     });
 
-    const { Items } = await this.client.send(command);
-    return Items?.map((d) => {
+    const { Items = [] } = await this.client.send(command);
+    return Items.map((d) => {
       const [firstName, lastName] = d.DoctorName.split(' ');
       return new Doctor(d.DoctorId, firstName, lastName, d.Specialization);
-    }) as Doctor[];
+    });
   }
 }

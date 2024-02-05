@@ -11,13 +11,16 @@ import { crossPartitionEntityList } from '../dynamo';
 
 import { Doctor, Patient } from '../entities';
 
-import { IDoctorsService } from '../interfaces';
+import { IDoctorsService, ISpecializationService } from '../interfaces';
 
 import { arraySubset } from '../utils';
 
 @Injectable()
 export class DoctorsUseCases {
-  constructor(private doctorsService: IDoctorsService) {}
+  constructor(
+    private doctorsService: IDoctorsService,
+    private specializationService: ISpecializationService,
+  ) {}
 
   createDoctor(createDoctorDto: CreateDoctorDto) {
     return this.doctorsService.create(createDoctorDto);
@@ -36,11 +39,11 @@ export class DoctorsUseCases {
   }
 
   createSpecialization(specialization: string) {
-    return this.doctorsService.addNewSpecialization(specialization);
+    return this.specializationService.addNewSpecialization(specialization);
   }
 
   getSpecializations() {
-    return this.doctorsService.getSpecializations();
+    return this.specializationService.getSpecializations();
   }
 
   async getDoctorList({
@@ -50,7 +53,7 @@ export class DoctorsUseCases {
     limit = 5,
   }: ListDoctorsDto): Promise<Doctor[]> {
     const specializations: string[] =
-      (await this.doctorsService.getSpecializations()) || [];
+      (await this.specializationService.getSpecializations()) || [];
 
     const collections = (
       filterBy.length > 0
