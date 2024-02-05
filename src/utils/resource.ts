@@ -16,7 +16,7 @@ export type ItemKey = {
 export type PrimaryKey = string | { pk: string; sk: string };
 
 export interface IResource<T> {
-  create(createDto: T): Promise<T | undefined>;
+  create(createDto: T, parentId?: string): Promise<T | undefined>;
   one(pk: string, sk: string): Promise<T | undefined>;
   update(pk: string, sk: string, updateDto: Partial<T>): Promise<T>;
   remove(pk: string, sk: string): Promise<string>;
@@ -37,7 +37,7 @@ export abstract class Resource<T extends Record<keyof T, any>>
     this.skPrefix = skPrefix;
   }
 
-  abstract create(createDto: T): Promise<T | undefined>;
+  abstract create(createDto: T, parentId?: string): Promise<T | undefined>;
 
   protected generateItemKey(pk: string, sk: string = pk): ItemKey {
     return {
