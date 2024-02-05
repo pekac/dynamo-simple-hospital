@@ -1,15 +1,22 @@
 import { CreateTestDto } from '../dtos/';
 
+import { Test } from '../entities';
+
 export abstract class ITestsService {
   abstract create(
-    patientId: string,
     createTestDto: CreateTestDto,
-  ): Promise<string>;
-  abstract one(patientId: string, testId: string): Promise<string>;
+    patientId: string,
+  ): Promise<Test | undefined>;
+  abstract one(patientId: string, testId: string): Promise<Test | undefined>;
   abstract remove(patientId: string, testId: string): Promise<string>;
   abstract listTestsForPatient(
     patientId: string,
-    lastSeen: string,
     limit: number,
-  ): Promise<any>;
+    lastSeen: string,
+  ): Promise<Test[]>;
+  abstract listTestsForDoctor(
+    doctorId: string,
+    limit: number,
+    lastSeen: string,
+  ): Promise<Test[]>;
 }
