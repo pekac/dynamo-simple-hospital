@@ -149,7 +149,7 @@ export class DoctorsService extends Resource<Doctor> {
     const item = {
       PatientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
       PatientId: addPatientDto.id,
-      DoctorName: `${doctor?.firstName} ${doctor?.firstName}`,
+      DoctorName: `${doctor?.firstName} ${doctor?.lastName}`,
       Specialization: doctor?.specialization,
       DoctorId: doctor.id,
       PK: DoctorPK,

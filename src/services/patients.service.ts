@@ -6,6 +6,7 @@ import { CreatePatientDto } from '../dtos';
 import { Doctor, Patient } from '../entities/';
 
 import { capitalize, Resource, truncateDateToWeek } from '../utils/';
+import { DOCTOR_ID_PREFIX } from './doctors.service';
 
 export const PATIENT_ID_PREFIX = 'PATIENT#';
 
@@ -113,12 +114,12 @@ export class PatientsService extends Resource<Patient> {
     lastSeen: string = '$',
   ): Promise<Doctor[]> {
     const PK = `${PATIENT_ID_PREFIX}${patientId}`;
-    const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
+    const SK = lastSeen === '$' ? PK : `${DOCTOR_ID_PREFIX}${lastSeen}`;
 
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: 'GSI3',
-      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
       ExpressionAttributeNames: {
         '#pk': 'GSI3PK',
         '#sk': 'GSI3SK',
@@ -127,6 +128,7 @@ export class PatientsService extends Resource<Patient> {
         ':pk': PK,
         ':sk': SK,
       },
+      ScanIndexForward: false,
       Limit: limit,
     });
 
