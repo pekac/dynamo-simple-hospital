@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsInt } from 'class-validator';
 
 export class CreateTestDto {
   @IsString()
@@ -9,11 +9,6 @@ export class CreateTestDto {
 
   @IsString()
   doctorId: string;
-}
-
-export class GetTestDto extends CreateTestDto {
-  @IsString()
-  id: string;
 }
 
 export class ListPatientTestsDto {
