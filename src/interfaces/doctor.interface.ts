@@ -1,18 +1,12 @@
-import {
-  AddPatientToDoctorDto,
-  CreateDoctorDto,
-  UpdateDoctorDto,
-} from '../dtos/';
-
-import { Patient } from '../entities';
+import { Doctor, Patient } from '../entities';
 
 export abstract class IDoctorsService {
-  abstract create(createDoctorDto: CreateDoctorDto): Promise<string>;
-  abstract one(doctorId: string): Promise<string>;
+  abstract create(createDoctorDto: Doctor): Promise<Doctor | undefined>;
+  abstract one(doctorId: string): Promise<Doctor | undefined>;
   abstract update(
     doctorId: string,
-    updateDoctorDto: UpdateDoctorDto,
-  ): Promise<string>;
+    updateDoctorDto: Partial<Doctor>,
+  ): Promise<Doctor>;
   abstract remove(doctorId: string): Promise<string>;
   abstract getSpecializations(): Promise<string[]>;
   abstract addNewSpecialization(specialization: string): Promise<string>;
@@ -20,10 +14,10 @@ export abstract class IDoctorsService {
     startCollection: string,
     limit: number,
     lastSeen: string,
-  ): Promise<any>;
+  ): Promise<Doctor[]>;
   abstract addPatient(
     doctorId: string,
-    addPatientDto: AddPatientToDoctorDto,
+    addPatientDto: Partial<Patient>,
   ): Promise<any>;
   abstract removePatientFromDoctor(
     doctorId: string,

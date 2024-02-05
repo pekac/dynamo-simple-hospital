@@ -7,9 +7,9 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { AddPatientToDoctorDto, CreateDoctorDto } from '../dtos';
-
 import { Doctor, Patient } from '../entities';
+
+import { IDoctorsService } from '../interfaces';
 
 import { PATIENT_ID_PREFIX } from './patients.service';
 
@@ -28,22 +28,25 @@ export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 - [] error handling and docs
 */
 @Injectable()
-export class DoctorsService extends Resource<Doctor> {
+export class DoctorsService
+  extends Resource<Doctor>
+  implements IDoctorsService
+{
   constructor() {
     super(Doctor, DOCTOR_ID_PREFIX);
   }
 
-  async create(createDoctorDto: CreateDoctorDto): Promise<Doctor | undefined> {
+  async create(doctor: Doctor): Promise<Doctor | undefined> {
     const createdAt = new Date();
-    const primaryKey = this.generateItemKey(createDoctorDto.id);
+    const primaryKey = this.generateItemKey(doctor.id);
     /* for fetching tests */
     const GSI1PK = primaryKey.PK;
     const GSI1SK = primaryKey.SK;
 
     /* for listing by specialization */
-    const specialization = createDoctorDto.specialization.toUpperCase();
+    const specialization = doctor.specialization.toUpperCase();
     const GSI2PK = `SPECIALIZATION#${specialization}`;
-    const GSI2SK = `${specialization}#${createDoctorDto.id}`;
+    const GSI2SK = `${specialization}#${doctor.id}`;
 
     /* for listing patients */
     const GSI3PK = primaryKey.PK;
@@ -51,10 +54,10 @@ export class DoctorsService extends Resource<Doctor> {
 
     const item = {
       ...primaryKey,
-      Id: createDoctorDto.id,
-      FirstName: createDoctorDto.firstName,
-      LastName: createDoctorDto.lastName,
-      Specialization: createDoctorDto.specialization,
+      Id: doctor.id,
+      FirstName: doctor.firstName,
+      LastName: doctor.lastName,
+      Specialization: doctor.specialization,
       CreatedAt: createdAt.toISOString(),
       GSI1PK,
       GSI1SK,
@@ -97,7 +100,7 @@ export class DoctorsService extends Resource<Doctor> {
     return specialization;
   }
 
-  async getSpecializations() {
+  async getSpecializations(): Promise<string[]> {
     const command = new GetCommand({
       TableName: this.tableName,
       Key: {
@@ -135,7 +138,7 @@ export class DoctorsService extends Resource<Doctor> {
 
   async addPatient(
     doctorId: string,
-    addPatientDto: AddPatientToDoctorDto,
+    addPatientDto: Partial<Patient>,
   ): Promise<any> {
     const doctor = await this.one(doctorId);
     if (!doctor) {
