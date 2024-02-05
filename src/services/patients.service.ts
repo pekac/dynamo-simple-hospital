@@ -1,24 +1,26 @@
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 
-import { CreatePatientDto } from '../dtos';
-
 import { Doctor, Patient } from '../entities/';
 
+import { IPatientsService } from '../interfaces';
+
 import { capitalize, Resource, truncateDateToWeek } from '../utils/';
+
 import { DOCTOR_ID_PREFIX } from './doctors.service';
 
 export const PATIENT_ID_PREFIX = 'PATIENT#';
 
 @Injectable()
-export class PatientsService extends Resource<Patient> {
+export class PatientsService
+  extends Resource<Patient>
+  implements IPatientsService
+{
   constructor() {
     super(Patient, PATIENT_ID_PREFIX);
   }
 
-  async create(
-    createPatientDto: CreatePatientDto,
-  ): Promise<Patient | undefined> {
+  async create(createPatientDto: Patient): Promise<Patient | undefined> {
     const primaryKey = this.generateItemKey(createPatientDto.id);
     /* list by last name */
     const firstLetter = createPatientDto.lastName.charAt(0);
