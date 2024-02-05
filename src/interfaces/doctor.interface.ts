@@ -8,8 +8,6 @@ export abstract class IDoctorsService {
     updateDoctorDto: Partial<Doctor>,
   ): Promise<Doctor>;
   abstract remove(doctorId: string): Promise<string>;
-  abstract getSpecializations(): Promise<string[]>;
-  abstract addNewSpecialization(specialization: string): Promise<string>;
   abstract list(
     startCollection: string,
     limit: number,
