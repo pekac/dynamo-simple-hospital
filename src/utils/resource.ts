@@ -47,24 +47,22 @@ export abstract class Resource<T extends Record<keyof T, any>>
   }
 
   protected mapToEntity(
-    entity: Record<string, number | string> | undefined = {},
+    record: Record<string, number | string> | undefined = {},
   ): T {
-    const keys: string[] = Object.keys(entity);
-    let transformed: T = new this.c();
+    const keys: string[] = Object.keys(record);
+    const entity: T = new this.c();
+    const keyNames = Object.keys(entity);
 
-    const keyNames = Object.keys(transformed);
-
-    for (const key of keys) {
+    return keys.reduce((entity, key) => {
       const transformedKey = decapitalize(key);
       if (keyNames.includes(transformedKey)) {
-        transformed = {
-          ...transformed,
-          [transformedKey]: entity[key],
+        entity = {
+          ...entity,
+          [transformedKey]: record[key],
         };
       }
-    }
-
-    return transformed;
+      return entity;
+    }, entity);
   }
 
   async one(...args: [string, string?]): Promise<T | undefined> {

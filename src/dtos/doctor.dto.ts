@@ -1,12 +1,9 @@
-import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
   IsInt,
-  IsObject,
   IsOptional,
   IsString,
-  ValidateNested,
 } from 'class-validator';
 
 export class CreateDoctorDto {
