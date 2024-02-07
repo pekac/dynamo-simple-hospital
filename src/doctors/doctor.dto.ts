@@ -44,3 +44,14 @@ export class ListDoctorsDto {
   @IsInt()
   readonly limit?: number;
 }
+
+export class AssignPatientToDoctorDto {
+  @IsString()
+  id: string;
+
+  @IsString()
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+}

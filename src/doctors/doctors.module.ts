@@ -1,24 +1,23 @@
 import { Module } from '@nestjs/common';
-
-import { DoctorsController } from './doctors.controller';
-
-import { IDoctorsService } from './doctor.interface';
-
-import { DoctorsService } from './doctors.service';
-
-import { DoctorsUseCases } from './doctors.use-cases';
-
 import {
-  ISpecializationService,
-  SpecializationService,
-} from '../specialization';
+  AssignPatientToDoctorModule,
+  CreateDoctorModule,
+  DeleteDoctorModule,
+  GetDoctorModule,
+  ListDoctorsModule,
+  RemovePatientFromDoctorModule,
+  UpdateDoctorModule,
+} from './use-cases';
 
 @Module({
-  controllers: [DoctorsController],
-  providers: [
-    DoctorsUseCases,
-    { provide: IDoctorsService, useClass: DoctorsService },
-    { provide: ISpecializationService, useClass: SpecializationService },
+  imports: [
+    AssignPatientToDoctorModule,
+    CreateDoctorModule,
+    DeleteDoctorModule,
+    GetDoctorModule,
+    ListDoctorsModule,
+    RemovePatientFromDoctorModule,
+    UpdateDoctorModule,
   ],
 })
 export class DoctorsModule {}

@@ -99,4 +99,16 @@ export class PatientsController {
       queryParams.lastSeen,
     );
   }
+
+  @Get('doctors/doctorId/patients')
+  listPatientsForADoctor(
+    @Param('doctorId') doctorId: string,
+    @Query() queryParams: ListPatientsForDoctorDto,
+  ) {
+    return this.doctorsUseCases.listPatients(
+      doctorId,
+      queryParams.limit,
+      queryParams.lastSeen,
+    );
+  }
 }
