@@ -51,7 +51,7 @@ export abstract class Resource<T extends Record<keyof T, any>>
   ): T {
     const keys: string[] = Object.keys(record);
     const entity: T = new this.c();
-    const keyNames = Object.keys(entity);
+    const keyNames: string[] = Object.keys(entity);
 
     return keys.reduce((entity, key) => {
       const transformedKey = decapitalize(key);
