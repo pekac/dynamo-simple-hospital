@@ -9,9 +9,12 @@ import {
 import { ListDoctorsDto } from '../doctor.dto';
 import { IDoctorsService } from '../doctor.interface';
 import { DoctorsService } from '../doctors.service';
-import { ISpecializationService } from 'src/doctors/specializations';
-import { arraySubset } from 'src/utils';
-import { crossPartitionEntityList } from 'src/dynamo';
+
+import { crossPartitionEntityList } from '../../dynamo';
+
+import { ISpecializationService } from '../../specializations';
+
+import { arraySubset } from '../../utils';
 
 class ListDoctorsQuery {
   constructor(public readonly queryParams: ListDoctorsDto) {}
@@ -31,7 +34,7 @@ class ListDoctorsController {
 class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
   constructor(
     private readonly doctorsService: IDoctorsService,
-    private readonly specializationService: ISpecializationService,
+    private readonly specializationsService: ISpecializationService,
   ) {}
 
   async execute({ queryParams }: ListDoctorsQuery) {
@@ -43,7 +46,7 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
     } = queryParams;
 
     const specializations: string[] =
-      (await this.specializationService.getSpecializations()) || [];
+      (await this.specializationsService.getSpecializations()) || [];
 
     const collections = (
       filterBy.length > 0

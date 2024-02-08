@@ -8,9 +8,6 @@ const Key = {
   SK: 'SPECIALIZATION',
 };
 
-/* TODO;
-- Implement resource for singletons (maybe some day?)
- */
 @Injectable()
 export class SpecializationService {
   async create(specialization: string) {
