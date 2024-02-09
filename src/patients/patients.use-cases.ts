@@ -92,10 +92,6 @@ export class PatientsUseCases {
     });
   }
 
-  getPatientById(patientId: string) {
-    return this.patientsService.one(patientId);
-  }
-
   createPatient(createPatientDto: CreatePatientDto) {
     return this.patientsService.create(createPatientDto);
   }
