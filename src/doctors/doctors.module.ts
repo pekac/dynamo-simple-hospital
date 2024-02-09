@@ -5,6 +5,7 @@ import {
   DeleteDoctorModule,
   GetDoctorModule,
   ListDoctorsModule,
+  ListDoctorsForPatientModule,
   RemovePatientFromDoctorModule,
   UpdateDoctorModule,
 } from './use-cases';
@@ -16,6 +17,7 @@ import {
     DeleteDoctorModule,
     GetDoctorModule,
     ListDoctorsModule,
+    ListDoctorsForPatientModule,
     RemovePatientFromDoctorModule,
     UpdateDoctorModule,
   ],

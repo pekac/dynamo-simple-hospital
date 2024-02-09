@@ -37,7 +37,6 @@ class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
   constructor(private readonly doctorsService: IDoctorsService) {}
 
   async execute({ createDoctorDto }: CreateDoctorCommand) {
-    /* validation logic? */
     return this.doctorsService.create(createDoctorDto);
   }
 }
