@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 
-import { DoctorsModule } from './doctors/doctors.module';
-import { SpecializationsModule } from './specializations/specializations.module';
+import { DoctorsModule } from './doctors';
+
+import { PatientsModule } from './patients';
+
+import { SpecializationsModule } from './specializations';
 
 @Module({
-  imports: [DoctorsModule, SpecializationsModule],
+  imports: [DoctorsModule, PatientsModule, SpecializationsModule],
   controllers: [],
   providers: [],
 })

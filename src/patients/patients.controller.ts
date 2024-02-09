@@ -28,12 +28,6 @@ export class PatientsController {
     return this.patientsUseCase.getPatientList(queryParams);
   }
 
-  @Post()
-  @UsePipes(new ValidationPipe())
-  createPatient(@Body() createPatientDto: CreatePatientDto) {
-    return this.patientsUseCase.createPatient(createPatientDto);
-  }
-
   @Put(':id')
   @UsePipes(new ValidationPipe())
   updatePatient(
