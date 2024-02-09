@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DeleteCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
+import { AssignPatientToDoctorDto } from './doctor.dto';
+
 import { Doctor } from './doctor.entity';
 
 import { IDoctorsService } from './doctor.interface';
 
-import { Patient, PATIENT_ID_PREFIX } from '../patients/';
+import { PATIENT_ID_PREFIX } from '../patients/';
 
 import { Resource } from '../utils';
 
@@ -89,7 +91,7 @@ export class DoctorsService
 
   async addPatient(
     doctorId: string,
-    addPatientDto: Partial<Patient>,
+    addPatientDto: AssignPatientToDoctorDto,
   ): Promise<any> {
     const doctor = await this.one(doctorId);
     if (!doctor) {
@@ -136,32 +138,34 @@ export class DoctorsService
     return result;
   }
 
-  async listPatients(
-    doctorId: string,
+  async listDoctorsForPatient(
+    patientId: string,
     limit: number = 20,
     lastSeen: string = '$',
-  ): Promise<Patient[]> {
-    const PK = this.generateItemKey(doctorId).PK;
-    const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
+  ): Promise<Doctor[]> {
+    const PK = `${PATIENT_ID_PREFIX}${patientId}`;
+    const SK = lastSeen === '$' ? PK : `${DOCTOR_ID_PREFIX}${lastSeen}`;
 
     const command = new QueryCommand({
       TableName: this.tableName,
-      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      IndexName: 'GSI3',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
       ExpressionAttributeNames: {
-        '#pk': 'PK',
-        '#sk': 'SK',
+        '#pk': 'GSI3PK',
+        '#sk': 'GSI3SK',
       },
       ExpressionAttributeValues: {
         ':pk': PK,
         ':sk': SK,
       },
+      ScanIndexForward: false,
       Limit: limit,
     });
-    const { Items = [] } = await this.client.send(command);
 
-    return Items.map((p) => {
-      const [firstName, lastName] = p.PatientName.split(' ');
-      return new Patient(p.PatientId, firstName, lastName);
+    const { Items = [] } = await this.client.send(command);
+    return Items.map((d) => {
+      const [firstName, lastName] = d.DoctorName.split(' ');
+      return new Doctor(d.DoctorId, firstName, lastName, d.Specialization);
     });
   }
 }

@@ -12,7 +12,7 @@ import { DoctorsService } from '../doctors.service';
 
 import { crossPartitionEntityList } from '../../dynamo';
 
-import { ISpecializationService } from '../../specializations';
+import { ISpecializationService } from '../../specializations/specialization.interface';
 
 import { arraySubset } from '../../utils';
 

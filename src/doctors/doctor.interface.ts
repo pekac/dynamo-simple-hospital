@@ -23,9 +23,9 @@ export abstract class IDoctorsService {
     doctorId: string,
     patientId: string,
   ): Promise<any>;
-  abstract listPatients(
-    doctorId: string,
-    limit: number,
-    lastSeen: string,
-  ): Promise<Patient[]>;
+  abstract listDoctorsForPatient(
+    patientId: string,
+    limit?: number,
+    lastSeen?: string,
+  ): Promise<Doctor[]>;
 }

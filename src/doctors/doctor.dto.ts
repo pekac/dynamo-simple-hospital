@@ -45,6 +45,17 @@ export class ListDoctorsDto {
   readonly limit?: number;
 }
 
+/* base pagination dto pls */
+export class ListDoctorsForPatientDto {
+  @IsOptional()
+  @IsString()
+  readonly lastSeen?: string;
+
+  @IsOptional()
+  @IsInt()
+  readonly limit?: number;
+}
+
 export class AssignPatientToDoctorDto {
   @IsString()
   id: string;
