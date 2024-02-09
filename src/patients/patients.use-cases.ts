@@ -2,25 +2,21 @@ import { Injectable } from '@nestjs/common';
 
 import {
   CreatePatientDto,
-  CreateTestDto,
   ListPatientsDto,
   UpdatePatientDto,
-} from '../dtos';
+} from './patient.dto';
 
 import { crossPartitionEntityList } from '../dynamo';
 
-import { Patient } from '../entities';
+import { Patient } from './patient.entity';
 
-import { IPatientsService, ITestsService } from '../interfaces';
+import { IPatientsService } from './patient.interface';
 
 import { truncateDateToWeek } from '../utils';
 
 @Injectable()
 export class PatientsUseCases {
-  constructor(
-    private patientsService: IPatientsService,
-    private testsService: ITestsService,
-  ) {}
+  constructor(private patientsService: IPatientsService) {}
 
   async getPatientList(queryParams: ListPatientsDto): Promise<any> {
     if (queryParams.sortBy === 'lastName') {
@@ -111,28 +107,16 @@ export class PatientsUseCases {
   deletePatient(patientId: string) {
     return this.patientsService.remove(patientId);
   }
-  /* tests */
-  createTestForPatient(patientId: string, createTestDto: CreateTestDto) {
-    return this.testsService.create(patientId, createTestDto);
-  }
 
-  getTestForPatient(patientId: string, testId: string) {
-    return this.testsService.one(patientId, testId);
-  }
-
-  deleteTest(patientId: string, testId: string) {
-    return this.testsService.remove(patientId, testId);
-  }
-
-  getTestsForPatient(
+  listPatientsForDoctor(
     patientId: string,
-    lastSeen: string = '$',
     limit: number = 3,
+    lastSeen: string = '$',
   ) {
-    return this.testsService.listTestsForPatient(patientId, lastSeen, limit);
-  }
-
-  listDoctors(patientId: string, limit: number = 3, lastSeen: string = '$') {
-    return this.patientsService.listDoctors(patientId, limit, lastSeen);
+    return this.patientsService.listPatientsForDoctor(
+      patientId,
+      limit,
+      lastSeen,
+    );
   }
 }

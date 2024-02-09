@@ -1,9 +1,9 @@
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 
-import { Doctor, Patient } from '../entities';
+import { Patient } from './patient.entity';
 
-import { IPatientsService } from '../interfaces';
+import { IPatientsService } from './patient.interface';
 
 import { capitalize, Resource, truncateDateToWeek } from '../utils';
 
@@ -108,5 +108,34 @@ export class PatientsService
 
     const { Items } = await this.client.send(command);
     return Items?.map((item) => this.mapToEntity(item)) as Patient[];
+  }
+
+  async listPatientsForDoctor(
+    doctorId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Patient[]> {
+    const PK = `${DOCTOR_ID_PREFIX}${doctorId}`;
+    const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
+
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'PK',
+        '#sk': 'SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      Limit: limit,
+    });
+    const { Items = [] } = await this.client.send(command);
+
+    return Items.map((p) => {
+      const [firstName, lastName] = p.PatientName.split(' ');
+      return new Patient(p.PatientId, firstName, lastName);
+    });
   }
 }

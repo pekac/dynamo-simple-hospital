@@ -1,4 +1,4 @@
-import { Doctor, Patient } from '../entities';
+import { Patient } from './patient.entity';
 
 export abstract class IPatientsService {
   abstract create(createPatientDto: Patient): Promise<Patient | undefined>;
@@ -18,9 +18,9 @@ export abstract class IPatientsService {
     limit: number,
     lastSeen: string,
   ): Promise<Patient[]>;
-  abstract listDoctors(
-    patientId: string,
+  abstract listPatientsForDoctor(
+    doctorId: string,
     limit: number,
     lastSeen: string,
-  ): Promise<Doctor[]>;
+  ): Promise<Patient[]>;
 }
