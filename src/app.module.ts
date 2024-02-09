@@ -8,7 +8,5 @@ import { SpecializationsModule } from './specializations';
 
 @Module({
   imports: [DoctorsModule, PatientsModule, SpecializationsModule],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

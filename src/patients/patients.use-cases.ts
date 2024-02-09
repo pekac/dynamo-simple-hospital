@@ -87,16 +87,4 @@ export class PatientsUseCases {
       updateCollection,
     });
   }
-
-  listPatientsForDoctor(
-    patientId: string,
-    limit: number = 3,
-    lastSeen: string = '$',
-  ) {
-    return this.patientsService.listPatientsForDoctor(
-      patientId,
-      limit,
-      lastSeen,
-    );
-  }
 }
