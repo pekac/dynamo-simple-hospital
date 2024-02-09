@@ -28,15 +28,6 @@ export class PatientsController {
     return this.patientsUseCase.getPatientList(queryParams);
   }
 
-  @Put(':id')
-  @UsePipes(new ValidationPipe())
-  updatePatient(
-    @Param('id') id: string,
-    @Body() updatePatientDto: UpdatePatientDto,
-  ) {
-    return this.patientsUseCase.updatePatient(id, updatePatientDto);
-  }
-
   @Delete(':id')
   deletePatient(@Param('id') id: string) {
     return this.patientsUseCase.deletePatient(id);

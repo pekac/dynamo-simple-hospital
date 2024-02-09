@@ -92,10 +92,6 @@ export class PatientsUseCases {
     });
   }
 
-  updatePatient(patientId: string, updatePatientDto: UpdatePatientDto) {
-    return this.patientsService.update(patientId, updatePatientDto);
-  }
-
   deletePatient(patientId: string) {
     return this.patientsService.remove(patientId);
   }
