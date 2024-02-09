@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import {
-  CreatePatientDto,
-  ListPatientsDto,
-  UpdatePatientDto,
-} from './patient.dto';
+import { ListPatientsDto } from './patient.dto';
 
 import { crossPartitionEntityList } from '../dynamo';
 
@@ -90,10 +86,6 @@ export class PatientsUseCases {
       shouldContinue,
       updateCollection,
     });
-  }
-
-  deletePatient(patientId: string) {
-    return this.patientsService.remove(patientId);
   }
 
   listPatientsForDoctor(

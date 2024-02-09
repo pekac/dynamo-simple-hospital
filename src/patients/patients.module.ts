@@ -1,8 +1,18 @@
 import { Module } from '@nestjs/common';
 
-import { CreatePatientModule, GetPatientModule } from './use-cases';
+import {
+  CreatePatientModule,
+  DeletePatientModule,
+  GetPatientModule,
+  UpdatePatientModule,
+} from './use-cases';
 
 @Module({
-  imports: [CreatePatientModule, GetPatientModule],
+  imports: [
+    CreatePatientModule,
+    DeletePatientModule,
+    GetPatientModule,
+    UpdatePatientModule,
+  ],
 })
 export class PatientsModule {}

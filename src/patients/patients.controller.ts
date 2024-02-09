@@ -1,22 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
-import {
-  CreatePatientDto,
-  ListPatientsDto,
-  ListPatientsForDoctorDto,
-  UpdatePatientDto,
-} from './patient.dto';
+import { ListPatientsDto, ListPatientsForDoctorDto } from './patient.dto';
 
 import { PatientsUseCases } from './patients.use-cases';
 
@@ -28,12 +12,7 @@ export class PatientsController {
     return this.patientsUseCase.getPatientList(queryParams);
   }
 
-  @Delete(':id')
-  deletePatient(@Param('id') id: string) {
-    return this.patientsUseCase.deletePatient(id);
-  }
-
-  @Get('doctors/doctorId/patients')
+  @Get('doctors/:doctorId/patients')
   listPatientsForADoctor(
     @Param('doctorId') doctorId: string,
     @Query() queryParams: ListPatientsForDoctorDto,
