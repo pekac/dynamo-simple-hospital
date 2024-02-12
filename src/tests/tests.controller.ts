@@ -1,8 +1,9 @@
 import { Controller } from '@nestjs/common';
+import { TestsUseCases } from './tests.use-cases';
 
 @Controller('tests')
 export class TestsController {
-  constructor();
+  constructor(private readonly testsUseCases: TestsUseCases);
 
   /* tests */
   @Get(':patientId/tests')
@@ -10,7 +11,7 @@ export class TestsController {
     @Param('patientId') patientId: string,
     @Query() { lastSeen, limit }: ListPatientTestsDto,
   ) {
-    return this.patientsUseCase.getTestsForPatient(patientId, lastSeen, limit);
+    return this.testsUseCases.getTestsForPatient(patientId, lastSeen, limit);
   }
 
   @Post(':patientId/tests')
@@ -19,7 +20,7 @@ export class TestsController {
     @Param('patientId') patientId: string,
     @Body() createTestDto: CreateTestDto,
   ) {
-    return this.patientsUseCase.createTestForPatient(patientId, createTestDto);
+    return this.testsUseCases.createTestForPatient(patientId, createTestDto);
   }
 
   @Get(':patientId/tests/:testId')
@@ -27,7 +28,7 @@ export class TestsController {
     @Param('patientId') patientId: string,
     @Param('testId') testId: string,
   ) {
-    return this.patientsUseCase.getTestForPatient(patientId, testId);
+    return this.testsUseCases.getTestForPatient(patientId, testId);
   }
 
   @Delete(':patientId/tests/:testId')
@@ -35,6 +36,6 @@ export class TestsController {
     @Param('patientId') patientId: string,
     @Param('testId') testId: string,
   ) {
-    return this.patientsUseCase.deleteTest(patientId, testId);
+    return this.testsUseCases.deleteTest(patientId, testId);
   }
 }

@@ -1,20 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Controller, Get, Module, Query } from '@nestjs/common';
+import {
+  IQueryHandler,
+  QueryHandler,
+  QueryBus,
+  CqrsModule,
+} from '@nestjs/cqrs';
 
-import { ListPatientsDto } from './patient.dto';
+import { ListPatientsDto } from '../patient.dto';
 
-import { crossPartitionEntityList } from '../dynamo';
+import { Patient } from '../patient.entity';
 
-import { Patient } from './patient.entity';
+import { IPatientsService } from '../patient.interface';
 
-import { IPatientsService } from './patient.interface';
+import { PatientsService } from '../patients.service';
 
-import { truncateDateToWeek } from '../utils';
+import { crossPartitionEntityList } from '../../dynamo';
 
-@Injectable()
-export class PatientsUseCases {
-  constructor(private patientsService: IPatientsService) {}
+import { truncateDateToWeek } from '../../utils';
 
-  async getPatientList(queryParams: ListPatientsDto): Promise<any> {
+class ListPatientsQuery {
+  constructor(public readonly queryParams: ListPatientsDto) {}
+}
+
+@Controller()
+class ListPatientsController {
+  constructor(private readonly queryBus: QueryBus) {}
+
+  @Get('patients?')
+  getPatientById(@Query() queryParams: ListPatientsDto) {
+    return this.queryBus.execute(new ListPatientsQuery(queryParams));
+  }
+}
+
+@QueryHandler(ListPatientsQuery)
+class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
+  constructor(private readonly patientsService: IPatientsService) {}
+
+  async execute({ queryParams }: ListPatientsQuery) {
     if (queryParams.sortBy === 'lastName') {
       return this.getPatientsByLastName(queryParams);
     }
@@ -88,3 +110,13 @@ export class PatientsUseCases {
     });
   }
 }
+
+@Module({
+  imports: [CqrsModule],
+  controllers: [ListPatientsController],
+  providers: [
+    ListPatientsHandler,
+    { provide: IPatientsService, useClass: PatientsService },
+  ],
+})
+export class ListPatientsModule {}

@@ -5,7 +5,7 @@ import { CreateTestDto } from './test.dto';
 import { ITestsService } from './test.interface';
 
 @Injectable()
-export class PatientsUseCases {
+export class TestsUseCases {
   constructor(private testsService: ITestsService) {}
 
   /* tests */
