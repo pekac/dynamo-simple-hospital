@@ -7,14 +7,17 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { CreateTestDto } from '../test.dto';
 import {
   CommandBus,
   CommandHandler,
   CqrsModule,
   ICommandHandler,
 } from '@nestjs/cqrs';
+
+import { CreateTestDto } from '../test.dto';
+
 import { ITestsService } from '../test.interface';
+
 import { TestsService } from '../tests.service';
 
 class CreateTestForPatientCommand {

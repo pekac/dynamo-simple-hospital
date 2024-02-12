@@ -7,7 +7,9 @@ import {
 } from '@nestjs/cqrs';
 
 import { ListPatientTestsDto } from '../test.dto';
+
 import { ITestsService } from '../test.interface';
+
 import { TestsService } from '../tests.service';
 
 class GetTestsForPatientQuery {
