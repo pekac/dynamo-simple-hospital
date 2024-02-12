@@ -1,19 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { TestsUseCases } from './tests.use-cases';
 
-@Controller('tests')
-export class TestsController {
-  constructor(private readonly testsUseCases: TestsUseCases);
-
-  /* tests */
-  @Get(':patientId/tests')
-  getTestsForPatient(
-    @Param('patientId') patientId: string,
-    @Query() { lastSeen, limit }: ListPatientTestsDto,
-  ) {
-    return this.testsUseCases.getTestsForPatient(patientId, lastSeen, limit);
-  }
-
   @Post(':patientId/tests')
   @UsePipes(new ValidationPipe())
   createTestForPatient(
@@ -38,4 +25,3 @@ export class TestsController {
   ) {
     return this.testsUseCases.deleteTest(patientId, testId);
   }
-}

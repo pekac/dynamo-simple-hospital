@@ -20,12 +20,4 @@ export class TestsUseCases {
   deleteTest(patientId: string, testId: string) {
     return this.testsService.remove(patientId, testId);
   }
-
-  getTestsForPatient(
-    patientId: string,
-    limit: number = 3,
-    lastSeen: string = '$',
-  ) {
-    return this.testsService.listTestsForPatient(patientId, limit, lastSeen);
-  }
 }
