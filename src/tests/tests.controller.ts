@@ -1,14 +1,4 @@
-import { Controller } from '@nestjs/common';
-import { TestsUseCases } from './tests.use-cases';
 
-  @Post(':patientId/tests')
-  @UsePipes(new ValidationPipe())
-  createTestForPatient(
-    @Param('patientId') patientId: string,
-    @Body() createTestDto: CreateTestDto,
-  ) {
-    return this.testsUseCases.createTestForPatient(patientId, createTestDto);
-  }
 
   @Get(':patientId/tests/:testId')
   getTestForPatient(
