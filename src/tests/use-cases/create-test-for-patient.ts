@@ -16,10 +16,11 @@ import {
 
 import { CreateTestDto } from '../test.dto';
 
+import { Test } from '../test.entity';
+
 import { ITestsService } from '../test.interface';
 
 import { TestsService } from '../tests.service';
-
 class CreateTestForPatientCommand {
   constructor(
     public readonly patientId: string,
@@ -49,7 +50,10 @@ class CreateTestForPatientHandler
 {
   constructor(private readonly testsService: ITestsService) {}
 
-  async execute({ patientId, createTestDto }: CreateTestForPatientCommand) {
+  async execute({
+    patientId,
+    createTestDto,
+  }: CreateTestForPatientCommand): Promise<Test | undefined> {
     return this.testsService.create(createTestDto, patientId);
   }
 }

@@ -1,10 +1,18 @@
-import { Controller, Get, Module, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Module,
+  NotFoundException,
+  Param,
+} from '@nestjs/common';
 import {
   CqrsModule,
   IQueryHandler,
   QueryBus,
   QueryHandler,
 } from '@nestjs/cqrs';
+
+import { Test } from '../test.entity';
 
 import { ITestsService } from '../test.interface';
 
@@ -36,8 +44,14 @@ class GetTestForPatientHandler
 {
   constructor(private readonly testsService: ITestsService) {}
 
-  async execute({ patientId, testId }: GetTestForPatientQuery) {
-    return this.testsService.one(patientId, testId);
+  async execute({ patientId, testId }: GetTestForPatientQuery): Promise<Test> {
+    const test = await this.testsService.one(patientId, testId);
+
+    if (!test) {
+      throw new NotFoundException(`Test with Id: ${testId} was not found.`);
+    }
+
+    return test;
   }
 }
 
