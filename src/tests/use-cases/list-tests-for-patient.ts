@@ -6,52 +6,56 @@ import {
   QueryHandler,
 } from '@nestjs/cqrs';
 
-import { ListPatientTestsDto } from '../test.dto';
+import { ListTestsParamsDto } from '../test.dto';
 
 import { ITestsService } from '../test.interface';
 
 import { TestsService } from '../tests.service';
 
-class GetTestsForPatientQuery {
+class ListTestsForPatientQuery {
   constructor(
     public readonly patientId: string,
-    public readonly queryParams: ListPatientTestsDto,
+    public readonly limit?: number,
+    public readonly lastSeen?: string,
   ) {}
 }
 
 @Controller()
-class GetTestsForPatientController {
+class ListTestsForPatientController {
   constructor(private readonly queryBus: QueryBus) {}
 
   @Get('patients/:patientId/tests')
   getTestsForPatient(
     @Param('patientId') patientId: string,
-    @Query() queryParams: ListPatientTestsDto,
+    @Query() { limit, lastSeen }: ListTestsParamsDto,
   ) {
     return this.queryBus.execute(
-      new GetTestsForPatientQuery(patientId, queryParams),
+      new ListTestsForPatientQuery(patientId, limit, lastSeen),
     );
   }
 }
 
-@QueryHandler(GetTestsForPatientQuery)
-class GetTestsForPatientHandler
-  implements IQueryHandler<GetTestsForPatientQuery>
+@QueryHandler(ListTestsForPatientQuery)
+class ListTestsForPatientHandler
+  implements IQueryHandler<ListTestsForPatientQuery>
 {
   constructor(private readonly testsService: ITestsService) {}
 
-  async execute({ patientId, queryParams }: GetTestsForPatientQuery) {
-    const { limit, lastSeen } = queryParams;
+  async execute({
+    patientId,
+    limit = 20,
+    lastSeen = '$',
+  }: ListTestsForPatientQuery) {
     return this.testsService.listTestsForPatient(patientId, limit, lastSeen);
   }
 }
 
 @Module({
   imports: [CqrsModule],
-  controllers: [GetTestsForPatientController],
+  controllers: [ListTestsForPatientController],
   providers: [
-    GetTestsForPatientHandler,
+    ListTestsForPatientHandler,
     { provide: ITestsService, useClass: TestsService },
   ],
 })
-export class GetTestsForPatientModule {}
+export class ListTestsForPatientModule {}

@@ -11,7 +11,7 @@ export class CreateTestDto {
   doctorId: string;
 }
 
-export class ListPatientTestsDto {
+export class ListTestsParamsDto {
   @IsString()
   readonly lastSeen: string;
 
