@@ -5,9 +5,9 @@ import { Patient } from './patient.entity';
 
 import { IPatientsService } from './patient.interface';
 
-import { capitalize, Resource, truncateDateToWeek } from '../utils';
+import { capitalize, Resource, truncateDateToWeek } from '../../utils';
 
-import { DOCTOR_ID_PREFIX } from '../doctors/doctors.service';
+import { DOCTOR_ID_PREFIX } from '../doctors/';
 
 export const PATIENT_ID_PREFIX = 'PATIENT#';
 

@@ -10,11 +10,11 @@ import { ListDoctorsDto } from '../doctor.dto';
 import { IDoctorsService } from '../doctor.interface';
 import { DoctorsService } from '../doctors.service';
 
-import { crossPartitionEntityList } from '../../dynamo';
+import { crossPartitionEntityList } from '../../../dynamo';
 
 import { ISpecializationService } from '../../specializations/specialization.interface';
 
-import { arraySubset } from '../../utils';
+import { arraySubset } from '../../../utils';
 
 class ListDoctorsQuery {
   constructor(public readonly queryParams: ListDoctorsDto) {}

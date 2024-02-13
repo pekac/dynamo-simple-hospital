@@ -7,9 +7,9 @@ import { Doctor } from './doctor.entity';
 
 import { IDoctorsService } from './doctor.interface';
 
-import { PATIENT_ID_PREFIX } from '../patients/';
+import { PATIENT_ID_PREFIX } from '../patients';
 
-import { Resource } from '../utils';
+import { Resource } from '../../utils';
 
 export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 

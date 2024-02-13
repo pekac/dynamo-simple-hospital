@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 
-import { DoctorsModule } from './doctors';
-
-import { PatientsModule } from './patients';
-
-import { SpecializationsModule } from './specializations';
-
-import { TestsModule } from './tests';
+import {
+  DoctorsModule,
+  PatientsModule,
+  SpecializationsModule,
+  TestsModule,
+} from './modules';
 
 @Module({
   imports: [DoctorsModule, PatientsModule, SpecializationsModule, TestsModule],
