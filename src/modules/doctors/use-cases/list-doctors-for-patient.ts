@@ -7,7 +7,11 @@ import {
 } from '@nestjs/cqrs';
 
 import { ListDoctorsForPatientDto } from '../doctor.dto';
+
+import { NoDoctorsFoundForPatientException } from '../doctor.exceptions';
+
 import { IDoctorsService } from '../doctor.interface';
+
 import { DoctorsService } from '../doctors.service';
 
 class ListDoctorsForPatientQuery {
@@ -40,11 +44,21 @@ class ListDoctorsForPatientHandler
 
   async execute({ patientId, queryParams }: ListDoctorsForPatientQuery) {
     const { lastSeen, limit } = queryParams;
-    return this.doctorsService.listDoctorsForPatient(
-      patientId,
-      limit,
-      lastSeen,
-    );
+    try {
+      const doctors = await this.doctorsService.listDoctorsForPatient(
+        patientId,
+        limit,
+        lastSeen,
+      );
+
+      if (doctors.length === 0) {
+        throw new NoDoctorsFoundForPatientException(patientId);
+      }
+
+      return doctors;
+    } catch (e) {
+      throw new Error(e.message);
+    }
   }
 }
 

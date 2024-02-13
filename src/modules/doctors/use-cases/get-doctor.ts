@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Module,
-  NotFoundException,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Module, Param } from '@nestjs/common';
 import {
   IQueryHandler,
   QueryHandler,
@@ -12,7 +6,10 @@ import {
   CqrsModule,
 } from '@nestjs/cqrs';
 
+import { DoctorNotFoundException } from '../doctor.exceptions';
+
 import { IDoctorsService } from '../doctor.interface';
+
 import { DoctorsService } from '../doctors.service';
 
 class GetDoctorQuery {
@@ -37,7 +34,7 @@ class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
     const doctor = await this.doctorsService.one(doctorId);
 
     if (!doctor) {
-      throw new NotFoundException(`Doctor with ID '${doctorId}' not found`);
+      throw new DoctorNotFoundException(doctorId);
     }
 
     return doctor;

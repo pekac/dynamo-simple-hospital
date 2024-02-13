@@ -72,6 +72,11 @@ export abstract class Resource<T extends Record<keyof T, any>>
       Key: key,
     });
     const { Item } = await this.client.send(command);
+
+    if (!Item) {
+      return undefined;
+    }
+
     return this.mapToEntity(Item);
   }
 

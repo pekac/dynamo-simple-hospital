@@ -7,14 +7,19 @@ import {
 } from '@nestjs/cqrs';
 
 import { ListDoctorsDto } from '../doctor.dto';
+
 import { IDoctorsService } from '../doctor.interface';
+
 import { DoctorsService } from '../doctors.service';
 
 import { crossPartitionEntityList } from '../../../dynamo';
 
+/* should move specialization to a submodule */
 import { ISpecializationService } from '../../specializations/specialization.interface';
+import { SpecializationService } from '../../specializations/specialization.service';
 
 import { arraySubset } from '../../../utils';
+import { NoDoctorsFoundException } from '../doctor.exceptions';
 
 class ListDoctorsQuery {
   constructor(public readonly queryParams: ListDoctorsDto) {}
@@ -37,7 +42,7 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
     private readonly specializationsService: ISpecializationService,
   ) {}
 
-  async execute({ queryParams }: ListDoctorsQuery) {
+  async listBySpecialization(queryParams: ListDoctorsDto) {
     const {
       filterBy = [],
       lastSeen = '$',
@@ -80,6 +85,16 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
       updateCollection,
     });
   }
+
+  async execute({ queryParams }: ListDoctorsQuery) {
+    const doctors = await this.listBySpecialization(queryParams);
+
+    if (doctors.length === 0) {
+      throw new NoDoctorsFoundException();
+    }
+
+    return doctors;
+  }
 }
 
 @Module({
@@ -88,6 +103,7 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
   providers: [
     ListDoctorsHandler,
     { provide: IDoctorsService, useClass: DoctorsService },
+    { provide: ISpecializationService, useClass: SpecializationService },
   ],
 })
 export class ListDoctorsModule {}

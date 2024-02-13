@@ -14,9 +14,9 @@ import { IPatientsService } from '../patient.interface';
 
 import { PatientsService } from '../patients.service';
 
-import { crossPartitionEntityList } from '../../dynamo';
+import { crossPartitionEntityList } from '../../../dynamo';
 
-import { truncateDateToWeek } from '../../utils';
+import { truncateDateToWeek } from '../../../utils';
 
 class ListPatientsQuery {
   constructor(public readonly queryParams: ListPatientsDto) {}

@@ -6,7 +6,10 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
+import { DoctorNotFoundException } from '../doctor.exceptions';
+
 import { IDoctorsService } from '../doctor.interface';
+
 import { DoctorsService } from '../doctors.service';
 
 class DeleteDoctorCommand {
@@ -28,7 +31,17 @@ class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
   constructor(private readonly doctorsService: IDoctorsService) {}
 
   async execute({ doctorId }: DeleteDoctorCommand) {
-    return this.doctorsService.remove(doctorId);
+    try {
+      const doctor = await this.doctorsService.one(doctorId);
+
+      if (!doctor) {
+        throw new DoctorNotFoundException(doctorId);
+      }
+
+      return this.doctorsService.remove(doctorId);
+    } catch (e) {
+      throw new Error(e.message);
+    }
   }
 }
 
