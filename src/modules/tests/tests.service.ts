@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 const KSUID = require('ksuid');
 
-import { Test } from './test.entity';
+import { Test } from '../../core/test.entity';
 
 import { ITestsService } from './test.interface';
 

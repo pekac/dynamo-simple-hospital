@@ -16,7 +16,7 @@ import {
 
 import { CreateTestDto } from '../test.dto';
 
-import { Test } from '../test.entity';
+import { Test } from '../../../core/test.entity';
 
 import { ITestsService } from '../test.interface';
 

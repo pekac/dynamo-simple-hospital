@@ -3,7 +3,7 @@ import { DeleteCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 import { AssignPatientToDoctorDto } from './doctor.dto';
 
-import { Doctor } from './doctor.entity';
+import { Doctor } from '../../core/doctor.entity';
 
 import { IDoctorsService } from './doctor.interface';
 

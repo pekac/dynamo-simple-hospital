@@ -1,4 +1,4 @@
-import { Doctor } from './doctor.entity';
+import { Doctor } from '../../core/doctor.entity';
 
 import { Patient } from '../patients';
 

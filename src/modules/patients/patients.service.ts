@@ -1,7 +1,7 @@
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 
-import { Patient } from './patient.entity';
+import { Patient } from '../../core/patient.entity';
 
 import { IPatientsService } from './patient.interface';
 

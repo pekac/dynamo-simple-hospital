@@ -8,7 +8,7 @@ import {
 
 import { ListPatientsDto } from '../patient.dto';
 
-import { Patient } from '../patient.entity';
+import { Patient } from '../../../core/patient.entity';
 
 import { IPatientsService } from '../patient.interface';
 

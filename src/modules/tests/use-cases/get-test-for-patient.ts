@@ -12,7 +12,7 @@ import {
   QueryHandler,
 } from '@nestjs/cqrs';
 
-import { Test } from '../test.entity';
+import { Test } from '../../../core/test.entity';
 
 import { ITestsService } from '../test.interface';
 

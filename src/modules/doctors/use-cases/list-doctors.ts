@@ -8,6 +8,8 @@ import {
 
 import { ListDoctorsDto } from '../doctor.dto';
 
+import { NoDoctorsFoundException } from '../doctor.exceptions';
+
 import { IDoctorsService } from '../doctor.interface';
 
 import { DoctorsService } from '../doctors.service';
@@ -19,7 +21,6 @@ import { ISpecializationService } from '../../specializations/specialization.int
 import { SpecializationService } from '../../specializations/specialization.service';
 
 import { arraySubset } from '../../../utils';
-import { NoDoctorsFoundException } from '../doctor.exceptions';
 
 class ListDoctorsQuery {
   constructor(public readonly queryParams: ListDoctorsDto) {}

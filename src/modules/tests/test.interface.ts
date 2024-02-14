@@ -1,6 +1,6 @@
 import { CreateTestDto } from './test.dto';
 
-import { Test } from './test.entity';
+import { Test } from '../../core/test.entity';
 
 export abstract class ITestsService {
   abstract create(
