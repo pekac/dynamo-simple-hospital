@@ -5,9 +5,11 @@ import { Patient } from '../../core/patient.entity';
 
 import { IPatientsService } from './patient.interface';
 
-import { capitalize, Resource, truncateDateToWeek } from '../../utils';
+import { capitalize, truncateDateToWeek } from '../../utils';
 
 import { DOCTOR_ID_PREFIX } from '../doctors/';
+
+import { Resource } from '../../dynamo/';
 
 export const PATIENT_ID_PREFIX = 'PATIENT#';
 

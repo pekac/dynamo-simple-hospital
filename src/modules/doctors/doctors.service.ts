@@ -7,7 +7,7 @@ import { Doctor } from '../../core/doctor.entity';
 
 import { PATIENT_ID_PREFIX } from '../patients';
 
-import { Resource } from '../../utils';
+import { Resource } from '../../dynamo/';
 
 export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 

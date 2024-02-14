@@ -9,7 +9,7 @@ import { ITestsService } from './test.interface';
 import { DOCTOR_ID_PREFIX } from '../doctors';
 import { PATIENT_ID_PREFIX } from '../patients/';
 
-import { Resource } from '../../utils';
+import { Resource } from '../../dynamo/';
 
 export const TEST_PK_PREFIX = PATIENT_ID_PREFIX;
 export const TEST_SK_PREFIX = '#TEST#';

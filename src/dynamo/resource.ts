@@ -5,9 +5,9 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { DATA_TABLE, client, objToUpdateExpression } from '../dynamo';
+import { DATA_TABLE, client, objToUpdateExpression } from '.';
 
-import { decapitalize } from './text';
+import { decapitalize } from '../utils/text';
 
 export type Key = 'PK' | 'SK';
 export type ItemKey = {
