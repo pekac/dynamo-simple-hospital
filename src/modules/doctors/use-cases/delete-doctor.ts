@@ -8,8 +8,6 @@ import {
 
 import { DoctorNotFoundException } from '../doctor.exceptions';
 
-import { IDoctorsService } from '../doctor.interface';
-
 import { DoctorsService } from '../doctors.service';
 
 class DeleteDoctorCommand {
@@ -28,7 +26,7 @@ class DeleteDoctorController {
 
 @CommandHandler(DeleteDoctorCommand)
 class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
-  constructor(private readonly doctorsService: IDoctorsService) {}
+  constructor(private readonly doctorsService: DoctorsService) {}
 
   async execute({ doctorId }: DeleteDoctorCommand) {
     try {
@@ -48,9 +46,6 @@ class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
 @Module({
   imports: [CqrsModule],
   controllers: [DeleteDoctorController],
-  providers: [
-    DeleteDoctorHandler,
-    { provide: IDoctorsService, useClass: DoctorsService },
-  ],
+  providers: [DeleteDoctorHandler],
 })
 export class DeleteDoctorModule {}

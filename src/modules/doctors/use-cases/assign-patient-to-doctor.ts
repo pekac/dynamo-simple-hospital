@@ -14,7 +14,6 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { IDoctorsService } from '../doctor.interface';
 import { DoctorsService } from '../doctors.service';
 import { AssignPatientToDoctorDto } from '../doctor.dto';
 
@@ -45,7 +44,7 @@ class AssignPatientToDoctorController {
 class AssignPatientToDoctorHandler
   implements ICommandHandler<AssignPatientToDoctorCommand>
 {
-  constructor(private readonly doctorsService: IDoctorsService) {}
+  constructor(private readonly doctorsService: DoctorsService) {}
 
   async execute({ doctorId, assignPatientDto }: AssignPatientToDoctorCommand) {
     return this.doctorsService.addPatient(doctorId, assignPatientDto);
@@ -55,9 +54,6 @@ class AssignPatientToDoctorHandler
 @Module({
   imports: [CqrsModule],
   controllers: [AssignPatientToDoctorController],
-  providers: [
-    AssignPatientToDoctorHandler,
-    { provide: IDoctorsService, useClass: DoctorsService },
-  ],
+  providers: [AssignPatientToDoctorHandler],
 })
 export class AssignPatientToDoctorModule {}

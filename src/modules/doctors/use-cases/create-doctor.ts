@@ -17,8 +17,6 @@ import { CreateDoctorDto } from '../doctor.dto';
 
 import { DoctorAlreadyExistsException } from '../doctor.exceptions';
 
-import { IDoctorsService } from '../doctor.interface';
-
 import { DoctorsService } from '../doctors.service';
 
 class CreateDoctorCommand {
@@ -38,7 +36,7 @@ class CreateDoctorController {
 
 @CommandHandler(CreateDoctorCommand)
 class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
-  constructor(private readonly doctorsService: IDoctorsService) {}
+  constructor(private readonly doctorsService: DoctorsService) {}
 
   async execute({ createDoctorDto }: CreateDoctorCommand) {
     try {
@@ -58,9 +56,6 @@ class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
 @Module({
   imports: [CqrsModule],
   controllers: [CreateDoctorController],
-  providers: [
-    CreateDoctorHandler,
-    { provide: IDoctorsService, useClass: DoctorsService },
-  ],
+  providers: [CreateDoctorHandler],
 })
 export class CreateDoctorModule {}

@@ -18,8 +18,6 @@ import { UpdateDoctorDto } from '../doctor.dto';
 
 import { DoctorNotFoundException } from '../doctor.exceptions';
 
-import { IDoctorsService } from '../doctor.interface';
-
 import { DoctorsService } from '../doctors.service';
 
 class UpdateDoctorCommand {
@@ -47,7 +45,7 @@ class UpdateDoctorController {
 
 @CommandHandler(UpdateDoctorCommand)
 class UpdateDoctorHandler implements ICommandHandler<UpdateDoctorCommand> {
-  constructor(private readonly doctorsService: IDoctorsService) {}
+  constructor(private readonly doctorsService: DoctorsService) {}
 
   async execute({ doctorId, updateDoctorDto }: UpdateDoctorCommand) {
     try {
@@ -67,9 +65,6 @@ class UpdateDoctorHandler implements ICommandHandler<UpdateDoctorCommand> {
 @Module({
   imports: [CqrsModule],
   controllers: [UpdateDoctorController],
-  providers: [
-    UpdateDoctorHandler,
-    { provide: IDoctorsService, useClass: DoctorsService },
-  ],
+  providers: [UpdateDoctorHandler],
 })
 export class UpdateDoctorModule {}

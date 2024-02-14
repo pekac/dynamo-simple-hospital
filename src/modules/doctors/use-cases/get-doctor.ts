@@ -8,8 +8,6 @@ import {
 
 import { DoctorNotFoundException } from '../doctor.exceptions';
 
-import { IDoctorsService } from '../doctor.interface';
-
 import { DoctorsService } from '../doctors.service';
 
 class GetDoctorQuery {
@@ -28,7 +26,7 @@ class GetDoctorController {
 
 @QueryHandler(GetDoctorQuery)
 class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
-  constructor(private readonly doctorsService: IDoctorsService) {}
+  constructor(private readonly doctorsService: DoctorsService) {}
 
   async execute({ doctorId }: GetDoctorQuery) {
     const doctor = await this.doctorsService.one(doctorId);
@@ -44,9 +42,6 @@ class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
 @Module({
   imports: [CqrsModule],
   controllers: [GetDoctorController],
-  providers: [
-    GetDoctorHandler,
-    { provide: IDoctorsService, useClass: DoctorsService },
-  ],
+  providers: [GetDoctorHandler],
 })
 export class GetDoctorModule {}

@@ -10,8 +10,6 @@ import { ListDoctorsDto } from '../doctor.dto';
 
 import { NoDoctorsFoundException } from '../doctor.exceptions';
 
-import { IDoctorsService } from '../doctor.interface';
-
 import { DoctorsService } from '../doctors.service';
 
 import { crossPartitionEntityList } from '../../../dynamo';
@@ -39,7 +37,7 @@ class ListDoctorsController {
 @QueryHandler(ListDoctorsQuery)
 class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
   constructor(
-    private readonly doctorsService: IDoctorsService,
+    private readonly doctorsService: DoctorsService,
     private readonly specializationsService: ISpecializationService,
   ) {}
 
@@ -103,7 +101,6 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
   controllers: [ListDoctorsController],
   providers: [
     ListDoctorsHandler,
-    { provide: IDoctorsService, useClass: DoctorsService },
     { provide: ISpecializationService, useClass: SpecializationService },
   ],
 })

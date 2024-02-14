@@ -5,8 +5,6 @@ import { AssignPatientToDoctorDto } from './doctor.dto';
 
 import { Doctor } from '../../core/doctor.entity';
 
-import { IDoctorsService } from './doctor.interface';
-
 import { PATIENT_ID_PREFIX } from '../patients';
 
 import { Resource } from '../../utils';
@@ -14,10 +12,7 @@ import { Resource } from '../../utils';
 export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 
 @Injectable()
-export class DoctorsService
-  extends Resource<Doctor>
-  implements IDoctorsService
-{
+export class DoctorsService extends Resource<Doctor> {
   constructor() {
     super(Doctor, DOCTOR_ID_PREFIX);
   }

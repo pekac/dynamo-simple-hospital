@@ -10,8 +10,6 @@ import { ListDoctorsForPatientDto } from '../doctor.dto';
 
 import { NoDoctorsFoundForPatientException } from '../doctor.exceptions';
 
-import { IDoctorsService } from '../doctor.interface';
-
 import { DoctorsService } from '../doctors.service';
 
 class ListDoctorsForPatientQuery {
@@ -40,7 +38,7 @@ class ListDoctorsForPatientController {
 class ListDoctorsForPatientHandler
   implements IQueryHandler<ListDoctorsForPatientQuery>
 {
-  constructor(private readonly doctorsService: IDoctorsService) {}
+  constructor(private readonly doctorsService: DoctorsService) {}
 
   async execute({ patientId, queryParams }: ListDoctorsForPatientQuery) {
     const { lastSeen, limit } = queryParams;
@@ -65,9 +63,6 @@ class ListDoctorsForPatientHandler
 @Module({
   imports: [CqrsModule],
   controllers: [ListDoctorsForPatientController],
-  providers: [
-    ListDoctorsForPatientHandler,
-    { provide: IDoctorsService, useClass: DoctorsService },
-  ],
+  providers: [ListDoctorsForPatientHandler],
 })
 export class ListDoctorsForPatientModule {}
