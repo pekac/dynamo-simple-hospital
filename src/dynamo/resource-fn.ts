@@ -4,8 +4,7 @@ import {
   GetCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
-const curry = require('lodash/curry');
-const flowRight = require('lodash/flowRight');
+import { curry, flowRight } from 'lodash/fp';
 
 import { DATA_TABLE, client as documentClient, objToUpdateExpression } from '.';
 
@@ -50,11 +49,12 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
   function mapToEntity(
     record: Record<string, number | string> | undefined = {},
   ): T {
+    console.log('record:', record);
     const keys: string[] = Object.keys(record);
     const entity: T = new entityTemplate();
     const keyNames: string[] = Object.keys(entity);
 
-    return keys.reduce((entity, key) => {
+    const res = keys.reduce((entity, key) => {
       const transformedKey = decapitalize(key);
       if (keyNames.includes(transformedKey)) {
         entity = {
@@ -64,11 +64,15 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
       }
       return entity;
     }, entity);
+    console.log('res:', res);
+
+    return res;
   }
 
   async function one(
     key: ItemKey,
   ): Promise<Record<string, number | string> | undefined> {
+    console.log('key:', key);
     const command = new GetCommand({
       TableName: tableName,
       Key: key,
@@ -79,6 +83,7 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
       return undefined;
     }
 
+    console.log('Item:', Item);
     return Item;
   }
 

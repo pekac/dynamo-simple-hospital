@@ -31,20 +31,20 @@ class GetDoctorController {
 
 @QueryHandler(GetDoctorQuery)
 class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
-  // private readonly one: (doctorId: string) => Promise<Doctor> =
-  //   itemBasedActionGenerator(
-  //     Doctor,
-  //     DOCTOR_ID_PREFIX,
-  //     DOCTOR_ID_PREFIX,
-  //     ITEM_BASED_ACTIONS.GET,
-  //   );
+  private readonly getDoctorById: (doctorId: string) => Promise<Doctor> =
+    itemBasedActionGenerator(
+      Doctor,
+      DOCTOR_ID_PREFIX,
+      DOCTOR_ID_PREFIX,
+      ITEM_BASED_ACTIONS.GET,
+    );
 
   async execute({ doctorId }: GetDoctorQuery) {
-    // const doctor = await this.one(doctorId);
-    // if (!doctor) {
-    //   throw new DoctorNotFoundException(doctorId);
-    // }
-    // return doctor;
+    const doctor = await this.getDoctorById(doctorId);
+    if (!doctor) {
+      throw new DoctorNotFoundException(doctorId);
+    }
+    return doctor;
   }
 }
 
