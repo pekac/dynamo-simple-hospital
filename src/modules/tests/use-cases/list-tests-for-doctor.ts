@@ -8,7 +8,7 @@ import {
 
 import { ListTestsParamsDto } from '../test.dto';
 
-import { Test } from '../../../core/test.entity';
+import { Test } from '../../../core/entities/test.entity';
 
 import { ITestsService } from '../test.interface';
 

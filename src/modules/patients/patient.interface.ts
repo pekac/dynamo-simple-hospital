@@ -1,4 +1,4 @@
-import { Patient } from '../../core/patient.entity';
+import { Patient } from '../../core/entities/patient.entity';
 
 export abstract class IPatientsService {
   abstract create(createPatientDto: Patient): Promise<Patient | undefined>;

@@ -1,17 +1,13 @@
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { Injectable } from '@nestjs/common';
 
-import { Patient } from '../../core/patient.entity';
+import { DOCTOR_ID_PREFIX, PATIENT_ID_PREFIX, Patient } from '../../core';
 
 import { IPatientsService } from './patient.interface';
 
 import { capitalize, truncateDateToWeek } from '../../utils';
 
-import { DOCTOR_ID_PREFIX } from '../doctors/';
-
 import { Resource } from '../../dynamo/';
-
-export const PATIENT_ID_PREFIX = 'PATIENT#';
 
 @Injectable()
 export class PatientsService
