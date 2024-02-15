@@ -8,7 +8,7 @@ import { DATA_TABLE } from '../client';
 
 import { crossPartitionEntityList } from '../helpers';
 
-import { PATIENT_ID_PREFIX } from '../../modules/';
+import { PATIENT_ID_PREFIX } from '../../core/';
 
 async function listByLastname(
   client: DynamoDBDocumentClient,

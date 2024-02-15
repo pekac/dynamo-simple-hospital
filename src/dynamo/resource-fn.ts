@@ -4,6 +4,8 @@ import {
   GetCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
+const curry = require('lodash/curry');
+const flowRight = require('lodash/flowRight');
 
 import { DATA_TABLE, client as documentClient, objToUpdateExpression } from '.';
 
@@ -64,8 +66,9 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
     }, entity);
   }
 
-  async function one(...args: [string, string?]): Promise<T | undefined> {
-    const key = generateItemKey(...args);
+  async function one(
+    key: ItemKey,
+  ): Promise<Record<string, number | string> | undefined> {
     const command = new GetCommand({
       TableName: tableName,
       Key: key,
@@ -76,32 +79,35 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
       return undefined;
     }
 
-    return mapToEntity(Item);
+    return Item;
   }
 
-  async function update(
-    ...args: [string, Partial<T>] | [string, string, Partial<T>]
-  ): Promise<T> {
+  function temp(...args: [string, Partial<T>] | [string, string, Partial<T>]) {
     /* not nice, mini hack for 2nd optional param */
     const [pk, sk, updateDto] = [
       args[0],
       args.length > 2 ? args[1] : args[0],
       args[args.length - 1],
     ] as [string, string, Partial<T>];
-    const key = generateItemKey(pk, sk);
-    const updateExpressionAndValues = objToUpdateExpression(updateDto);
+  }
+
+  // const updateExpressionAndValues = objToUpdateExpression(updateDto);
+
+  async function update(
+    key: ItemKey,
+    updateDto: Partial<T>,
+  ): Promise<Record<string, number | string> | undefined> {
     const command = new UpdateCommand({
       TableName: tableName,
       Key: key,
-      ...updateExpressionAndValues,
+      // ...updateExpressionAndValues,
       ReturnValues: 'ALL_NEW',
     });
     const result = await client.send(command);
-    return mapToEntity(result.Attributes) as T;
+    return result.Attributes;
   }
 
-  async function remove(...args: [string, string?]): Promise<any> {
-    const key = generateItemKey(...args);
+  async function remove(key: ItemKey): Promise<any> {
     const command = new DeleteCommand({
       TableName: tableName,
       Key: key,
@@ -111,24 +117,26 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
   }
 
   switch (action) {
-    case ITEM_BASED_ACTIONS.CREATE: {
-      return one; // apply: generate key, db query, map to entity
-    }
+    // case ITEM_BASED_ACTIONS.CREATE: {
+    //   return one; // apply: generate key, db query, map to entity
+    // }
 
     case ITEM_BASED_ACTIONS.GET: {
-      return one;
+      return flowRight(mapToEntity, one, curry(generateItemKey));
     }
 
     case ITEM_BASED_ACTIONS.UPDATE: {
-      return update;
+      return flowRight(mapToEntity, update, curry(generateItemKey));
     }
 
     case ITEM_BASED_ACTIONS.DELETE: {
-      return remove;
+      return flowRight(remove, curry(generateItemKey));
     }
 
     default: {
-      return () => {};
+      return (...args: any) => {
+        throw new Error('dont mess around');
+      };
     }
   }
 }
