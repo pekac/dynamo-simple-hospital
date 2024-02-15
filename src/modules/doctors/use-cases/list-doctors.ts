@@ -36,63 +36,58 @@ class ListDoctorsController {
 
 @QueryHandler(ListDoctorsQuery)
 class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
-  constructor(
-    private readonly doctorsService: DoctorsService,
-    private readonly specializationsService: ISpecializationService,
-  ) {}
+  constructor() {}
 
-  async listBySpecialization(queryParams: ListDoctorsDto) {
-    const {
-      filterBy = [],
-      lastSeen = '$',
-      collection: lastCollection = '',
-      limit = 5,
-    } = queryParams;
+  // async listBySpecialization(queryParams: ListDoctorsDto) {
+  //   const {
+  //     filterBy = [],
+  //     lastSeen = '$',
+  //     collection: lastCollection = '',
+  //     limit = 5,
+  //   } = queryParams;
 
-    const specializations: string[] =
-      (await this.specializationsService.getSpecializations()) || [];
+  //   const specializations: string[] =
+  //     (await this.specializationsService.getSpecializations()) || [];
 
-    const collections = (
-      filterBy.length > 0
-        ? arraySubset(
-            specializations,
-            filterBy.map((c) => c.toUpperCase()),
-          )
-        : specializations
-    ).sort();
+  //   const collections = (
+  //     filterBy.length > 0
+  //       ? arraySubset(
+  //           specializations,
+  //           filterBy.map((c) => c.toUpperCase()),
+  //         )
+  //       : specializations
+  //   ).sort();
 
-    const shouldContinue = (col: string) => collections.includes(col);
+  //   const shouldContinue = (col: string) => collections.includes(col);
 
-    const getItems = (col: string, limit: number, lastSeen: string) =>
-      this.doctorsService.list(col, limit, lastSeen);
+  //   const getItems = (col: string, limit: number, lastSeen: string) =>
+  //     this.doctorsService.list(col, limit, lastSeen);
 
-    const updateCollection = (col: string, lastSeen: string = '$') => {
-      const index = collections.indexOf(col);
-      return {
-        collection:
-          index < collections.length - 1 ? collections[index + 1] : 'THE_END',
-        lastSeen,
-      };
-    };
+  //   const updateCollection = (col: string, lastSeen: string = '$') => {
+  //     const index = collections.indexOf(col);
+  //     return {
+  //       collection:
+  //         index < collections.length - 1 ? collections[index + 1] : 'THE_END',
+  //       lastSeen,
+  //     };
+  //   };
 
-    return crossPartitionEntityList({
-      collection: lastCollection?.toUpperCase() || collections[0],
-      lastSeen: lastSeen,
-      limit,
-      getItems,
-      shouldContinue,
-      updateCollection,
-    });
-  }
+  //   return crossPartitionEntityList({
+  //     collection: lastCollection?.toUpperCase() || collections[0],
+  //     lastSeen: lastSeen,
+  //     limit,
+  //     getItems,
+  //     shouldContinue,
+  //     updateCollection,
+  //   });
+  // }
 
   async execute({ queryParams }: ListDoctorsQuery) {
-    const doctors = await this.listBySpecialization(queryParams);
-
-    if (doctors.length === 0) {
-      throw new NoDoctorsFoundException();
-    }
-
-    return doctors;
+    // const doctors = await this.listBySpecialization(queryParams);
+    // if (doctors.length === 0) {
+    //   throw new NoDoctorsFoundException();
+    // }
+    // return doctors;
   }
 }
 

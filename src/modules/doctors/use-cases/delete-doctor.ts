@@ -8,8 +8,6 @@ import {
 
 import { DoctorNotFoundException } from '../doctor.exceptions';
 
-import { DoctorsService } from '../doctors.service';
-
 class DeleteDoctorCommand {
   constructor(public readonly doctorId: string) {}
 }
@@ -26,17 +24,15 @@ class DeleteDoctorController {
 
 @CommandHandler(DeleteDoctorCommand)
 class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
-  constructor(private readonly doctorsService: DoctorsService) {}
+  constructor() {}
 
   async execute({ doctorId }: DeleteDoctorCommand) {
     try {
-      const doctor = await this.doctorsService.one(doctorId);
-
-      if (!doctor) {
-        throw new DoctorNotFoundException(doctorId);
-      }
-
-      return this.doctorsService.remove(doctorId);
+      // const doctor = await this.doctorsService.one(doctorId);
+      // if (!doctor) {
+      //   throw new DoctorNotFoundException(doctorId);
+      // }
+      // return this.doctorsService.remove(doctorId);
     } catch (e) {
       throw new Error(e.message);
     }

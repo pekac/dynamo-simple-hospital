@@ -17,8 +17,6 @@ import { CreateDoctorDto } from '../doctor.dto';
 
 import { DoctorAlreadyExistsException } from '../doctor.exceptions';
 
-import { DoctorsService } from '../doctors.service';
-
 class CreateDoctorCommand {
   constructor(public readonly createDoctorDto: CreateDoctorDto) {}
 }
@@ -36,17 +34,15 @@ class CreateDoctorController {
 
 @CommandHandler(CreateDoctorCommand)
 class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
-  constructor(private readonly doctorsService: DoctorsService) {}
+  constructor() {}
 
   async execute({ createDoctorDto }: CreateDoctorCommand) {
     try {
-      const doctor = await this.doctorsService.one(createDoctorDto.id);
-
-      if (doctor) {
-        throw new DoctorAlreadyExistsException(createDoctorDto.id);
-      }
-
-      return this.doctorsService.create(createDoctorDto);
+      // const doctor = await this.doctorsService.one(createDoctorDto.id);
+      // if (doctor) {
+      //   throw new DoctorAlreadyExistsException(createDoctorDto.id);
+      // }
+      // return this.doctorsService.create(createDoctorDto);
     } catch (e) {
       throw new Error(e.message);
     }

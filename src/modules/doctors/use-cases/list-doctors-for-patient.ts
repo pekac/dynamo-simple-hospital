@@ -10,8 +10,6 @@ import { ListDoctorsForPatientDto } from '../doctor.dto';
 
 import { NoDoctorsFoundForPatientException } from '../doctor.exceptions';
 
-import { DoctorsService } from '../doctors.service';
-
 class ListDoctorsForPatientQuery {
   constructor(
     public readonly patientId: string,
@@ -38,22 +36,20 @@ class ListDoctorsForPatientController {
 class ListDoctorsForPatientHandler
   implements IQueryHandler<ListDoctorsForPatientQuery>
 {
-  constructor(private readonly doctorsService: DoctorsService) {}
+  constructor() {}
 
   async execute({ patientId, queryParams }: ListDoctorsForPatientQuery) {
     const { lastSeen, limit } = queryParams;
     try {
-      const doctors = await this.doctorsService.listDoctorsForPatient(
-        patientId,
-        limit,
-        lastSeen,
-      );
-
-      if (doctors.length === 0) {
-        throw new NoDoctorsFoundForPatientException(patientId);
-      }
-
-      return doctors;
+      // const doctors = await this.doctorsService.listDoctorsForPatient(
+      //   patientId,
+      //   limit,
+      //   lastSeen,
+      // );
+      // if (doctors.length === 0) {
+      //   throw new NoDoctorsFoundForPatientException(patientId);
+      // }
+      // return doctors;
     } catch (e) {
       throw new Error(e.message);
     }

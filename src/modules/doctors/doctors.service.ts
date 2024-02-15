@@ -3,13 +3,9 @@ import { DeleteCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 import { AssignPatientToDoctorDto } from './doctor.dto';
 
-import { Doctor } from '../../core/doctor.entity';
-
-import { PATIENT_ID_PREFIX } from '../patients';
+import { DOCTOR_ID_PREFIX, PATIENT_ID_PREFIX, Doctor } from '../../core';
 
 import { Resource } from '../../dynamo/';
-
-export const DOCTOR_ID_PREFIX = 'DOCTOR#';
 
 @Injectable()
 export class DoctorsService extends Resource<Doctor> {

@@ -45,17 +45,15 @@ class UpdateDoctorController {
 
 @CommandHandler(UpdateDoctorCommand)
 class UpdateDoctorHandler implements ICommandHandler<UpdateDoctorCommand> {
-  constructor(private readonly doctorsService: DoctorsService) {}
+  constructor() {}
 
   async execute({ doctorId, updateDoctorDto }: UpdateDoctorCommand) {
     try {
-      const doctor = await this.doctorsService.one(doctorId);
-
-      if (!doctor) {
-        throw new DoctorNotFoundException(doctorId);
-      }
-
-      return this.doctorsService.update(doctorId, updateDoctorDto);
+      // const doctor = await this.doctorsService.one(doctorId);
+      // if (!doctor) {
+      //   throw new DoctorNotFoundException(doctorId);
+      // }
+      // return this.doctorsService.update(doctorId, updateDoctorDto);
     } catch (e) {
       throw new Error(e.message);
     }
