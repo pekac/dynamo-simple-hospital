@@ -56,30 +56,6 @@ export class DoctorsService extends Resource<Doctor> {
     }
   }
 
-  async list(
-    specialization: string,
-    limit: number = 5,
-    lastSeen: string = '$',
-  ): Promise<Doctor[]> {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: 'GSI2',
-      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
-      ExpressionAttributeNames: {
-        '#pk': 'GSI2PK',
-        '#sk': 'GSI2SK',
-      },
-      ExpressionAttributeValues: {
-        ':pk': `SPECIALIZATION#${specialization}`,
-        ':sk': `${specialization}#${lastSeen}`,
-      },
-      Limit: limit,
-    });
-
-    const { Items = [] } = await this.client.send(command);
-    return Items.map((item) => this.mapToEntity(item));
-  }
-
   async addPatient(
     doctorId: string,
     addPatientDto: AssignPatientToDoctorDto,
