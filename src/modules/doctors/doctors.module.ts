@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
+
 import {
   AssignPatientToDoctorModule,
   CreateDoctorModule,
+  CreateSpecializationModule,
   DeleteDoctorModule,
   GetDoctorModule,
+  GetSpecializationsModule,
   ListDoctorsModule,
   ListDoctorsForPatientModule,
   RemovePatientFromDoctorModule,
@@ -14,8 +17,10 @@ import {
   imports: [
     AssignPatientToDoctorModule,
     CreateDoctorModule,
+    CreateSpecializationModule,
     DeleteDoctorModule,
     GetDoctorModule,
+    GetSpecializationsModule,
     ListDoctorsModule,
     ListDoctorsForPatientModule,
     RemovePatientFromDoctorModule,

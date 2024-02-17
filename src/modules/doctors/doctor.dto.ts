@@ -65,3 +65,8 @@ export class AssignPatientToDoctorDto {
   @IsString()
   lastName: string;
 }
+
+export class CreateSpecializationDto {
+  @IsString()
+  specialization: string;
+}

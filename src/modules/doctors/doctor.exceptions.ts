@@ -23,3 +23,9 @@ export class NoDoctorsFoundForPatientException extends NotFoundException {
     super(`No doctors found for patient with ID ${patientId}`);
   }
 }
+
+export class NoSpecializationsFoundException extends NotFoundException {
+  constructor() {
+    super('No specializations found');
+  }
+}

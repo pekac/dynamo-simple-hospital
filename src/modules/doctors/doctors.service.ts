@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DeleteCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DeleteCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 
 import { AssignPatientToDoctorDto } from './doctor.dto';
 
