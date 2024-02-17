@@ -7,20 +7,20 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { Doctor } from '../../../core';
+import { Doctor } from 'src/core';
 
-import { DATA_TABLE, client, crossPartitionEntityList } from '../../../dynamo';
+import { DATA_TABLE, client, crossPartitionEntityList } from 'src/dynamo';
+
+import { arraySubset, capitalize } from 'src/utils';
+
+import { getSpecializationsQuery } from '../common';
 
 import { ListDoctorsDto } from '../doctor.dto';
 
-import { NoDoctorsFoundException } from '../doctor.exceptions';
-
-/* should move specialization to a submodule */
-import { ISpecializationService } from '../../specializations/specialization.interface';
-import { SpecializationService } from '../../specializations/specialization.service';
-
-import { arraySubset } from '../../../utils';
-import { capitalize } from 'lodash';
+import {
+  NoDoctorsFoundException,
+  NoSpecializationsFoundException,
+} from '../doctor.exceptions';
 
 class ListDoctorsQuery {
   constructor(public readonly queryParams: ListDoctorsDto) {}
@@ -43,9 +43,8 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
     limit: number = 5,
     lastSeen: string = '$',
   ): Promise<Doctor[]> {
-    const shell = new Doctor();
-
-    const keys = Object.keys(shell).map((key) => `#${key}`);
+    const doctorSkeleton = new Doctor();
+    const keys = Object.keys(doctorSkeleton).map((key) => `#${key}`);
 
     const projectionNames = keys.reduce(
       (acc, key) => {
@@ -76,17 +75,15 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
     return Items as Doctor[];
   }
 
-  async listBySpecialization(queryParams: ListDoctorsDto) {
-    const {
+  async listDoctorsBySpecialization(
+    {
       filterBy = [],
       lastSeen = '$',
       collection: lastCollection = '',
       limit = 5,
-    } = queryParams;
-
-    const specializations: string[] =
-      (await this.specializationsService.getSpecializations()) || [];
-
+    }: ListDoctorsDto,
+    specializations: string[],
+  ) {
     const collections = (
       filterBy.length > 0
         ? arraySubset(
@@ -121,20 +118,32 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
   }
 
   async execute({ queryParams }: ListDoctorsQuery) {
-    // const doctors = await this.listBySpecialization(queryParams);
-    // if (doctors.length === 0) {
-    //   throw new NoDoctorsFoundException();
-    // }
-    // return doctors;
+    try {
+      const specializations = await getSpecializationsQuery();
+
+      if (specializations.length === 0) {
+        throw new NoSpecializationsFoundException();
+      }
+
+      const doctors = await this.listDoctorsBySpecialization(
+        queryParams,
+        specializations,
+      );
+
+      if (doctors.length === 0) {
+        throw new NoDoctorsFoundException();
+      }
+
+      return doctors;
+    } catch (e) {
+      throw new Error(e.message);
+    }
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [ListDoctorsController],
-  providers: [
-    ListDoctorsHandler,
-    { provide: ISpecializationService, useClass: SpecializationService },
-  ],
+  providers: [ListDoctorsHandler],
 })
 export class ListDoctorsModule {}
