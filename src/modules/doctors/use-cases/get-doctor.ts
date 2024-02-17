@@ -44,6 +44,7 @@ class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
     if (!doctor) {
       throw new DoctorNotFoundException(doctorId);
     }
+
     return doctor;
   }
 }

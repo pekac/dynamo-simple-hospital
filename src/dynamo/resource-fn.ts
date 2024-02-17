@@ -94,16 +94,14 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
     });
     const { Item } = await client.send(command);
 
-    if (!Item) {
-      return undefined;
-    }
-
-    return Item;
+    return Item || undefined;
   }
 
-  function temp(...args: [string, Partial<T>] | [string, string, Partial<T>]) {
+  function transformUpdateArgs(
+    ...args: [string, Partial<T>] | [string, string, Partial<T>]
+  ): [string, string, Partial<T>] {
     /* not nice, mini hack for 2nd optional param */
-    const [pk, sk, updateDto] = [
+    return [
       args[0],
       args.length > 2 ? args[1] : args[0],
       args[args.length - 1],
