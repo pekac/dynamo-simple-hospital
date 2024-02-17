@@ -1,0 +1,4 @@
+export const SPECIALIZATION_KEY = {
+  PK: 'DOCTOR',
+  SK: 'SPECIALIZATION',
+};
