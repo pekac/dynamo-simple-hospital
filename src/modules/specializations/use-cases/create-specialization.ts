@@ -12,12 +12,13 @@ import {
   CqrsModule,
   ICommandHandler,
 } from '@nestjs/cqrs';
+import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 import { CreateSpecializationDto } from '../specialization.dto';
 
-import { ISpecializationService } from '../specialization.interface';
+import { SPECIALIZATION_KEY } from 'src/core';
 
-import { SpecializationService } from '../specialization.service';
+import { DATA_TABLE, client } from 'src/dynamo';
 
 class CreateSpecializationCommand {
   constructor(public readonly specialization: string) {}
@@ -40,21 +41,31 @@ class CreateSpecializationController {
 class CreateSpecializationHandler
   implements ICommandHandler<CreateSpecializationCommand>
 {
-  constructor(
-    private readonly specializationsService: ISpecializationService,
-  ) {}
-
-  execute({ specialization }: CreateSpecializationCommand) {
-    return this.specializationsService.addNewSpecialization(specialization);
+  async execute({ specialization }: CreateSpecializationCommand) {
+    const command = new UpdateCommand({
+      TableName: DATA_TABLE,
+      Key: SPECIALIZATION_KEY,
+      UpdateExpression: 'ADD #specialization :specialization',
+      ExpressionAttributeNames: {
+        '#specialization': 'Specializations',
+      },
+      ExpressionAttributeValues: {
+        ':specialization': new Set([specialization.toUpperCase()]),
+      },
+      ReturnValues: 'ALL_NEW',
+    });
+    try {
+      await client.send(command);
+      return specialization;
+    } catch (e) {
+      throw new Error(e.message);
+    }
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [CreateSpecializationController],
-  providers: [
-    CreateSpecializationHandler,
-    { provide: ISpecializationService, useClass: SpecializationService },
-  ],
+  providers: [CreateSpecializationHandler],
 })
 export class CreateSpecializationModule {}
