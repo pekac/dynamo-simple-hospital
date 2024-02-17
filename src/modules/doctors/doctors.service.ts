@@ -128,35 +128,4 @@ export class DoctorsService extends Resource<Doctor> {
     const result = await this.client.send(command);
     return result;
   }
-
-  async listDoctorsForPatient(
-    patientId: string,
-    limit: number = 20,
-    lastSeen: string = '$',
-  ): Promise<Doctor[]> {
-    const PK = `${PATIENT_ID_PREFIX}${patientId}`;
-    const SK = lastSeen === '$' ? PK : `${DOCTOR_ID_PREFIX}${lastSeen}`;
-
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: 'GSI3',
-      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
-      ExpressionAttributeNames: {
-        '#pk': 'GSI3PK',
-        '#sk': 'GSI3SK',
-      },
-      ExpressionAttributeValues: {
-        ':pk': PK,
-        ':sk': SK,
-      },
-      ScanIndexForward: false,
-      Limit: limit,
-    });
-
-    const { Items = [] } = await this.client.send(command);
-    return Items.map((d) => {
-      const [firstName, lastName] = d.DoctorName.split(' ');
-      return new Doctor(d.DoctorId, firstName, lastName, d.Specialization);
-    });
-  }
 }

@@ -5,6 +5,11 @@ import {
   QueryBus,
   CqrsModule,
 } from '@nestjs/cqrs';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+
+import { DOCTOR_ID_PREFIX, Doctor, PATIENT_ID_PREFIX } from 'src/core';
+
+import { DATA_TABLE, client } from 'src/dynamo';
 
 import { ListDoctorsForPatientDto } from '../doctor.dto';
 
@@ -36,20 +41,50 @@ class ListDoctorsForPatientController {
 class ListDoctorsForPatientHandler
   implements IQueryHandler<ListDoctorsForPatientQuery>
 {
-  constructor() {}
+  async listDoctorsForPatient(
+    patientId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Doctor[]> {
+    const PK = `${PATIENT_ID_PREFIX}${patientId}`;
+    const SK = lastSeen === '$' ? PK : `${DOCTOR_ID_PREFIX}${lastSeen}`;
+
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI3',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'GSI3PK',
+        '#sk': 'GSI3SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
+
+    const { Items = [] } = await client.send(command);
+    return Items.map((d) => {
+      const [firstName, lastName] = d.DoctorName.split(' ');
+      return new Doctor(d.DoctorId, firstName, lastName, d.Specialization);
+    });
+  }
 
   async execute({ patientId, queryParams }: ListDoctorsForPatientQuery) {
     const { lastSeen, limit } = queryParams;
     try {
-      // const doctors = await this.doctorsService.listDoctorsForPatient(
-      //   patientId,
-      //   limit,
-      //   lastSeen,
-      // );
-      // if (doctors.length === 0) {
-      //   throw new NoDoctorsFoundForPatientException(patientId);
-      // }
-      // return doctors;
+      const doctors = await this.listDoctorsForPatient(
+        patientId,
+        limit,
+        lastSeen,
+      );
+
+      if (doctors.length === 0) {
+        throw new NoDoctorsFoundForPatientException(patientId);
+      }
+      return doctors;
     } catch (e) {
       throw new Error(e.message);
     }
