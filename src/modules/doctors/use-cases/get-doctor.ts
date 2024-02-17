@@ -8,12 +8,16 @@ import {
 
 import {
   ITEM_BASED_ACTIONS,
-  itemBasedActionGenerator,
+  itemActionGenerator,
 } from 'src/dynamo/resource-fn';
 
 import { Doctor, DOCTOR_ID_PREFIX } from 'src/core';
 
 import { DoctorNotFoundException } from '../doctor.exceptions';
+
+interface IDoctorActions {
+  one: (doctorId: string) => Promise<Doctor | undefined>;
+}
 
 class GetDoctorQuery {
   constructor(public readonly doctorId: string) {}
@@ -31,16 +35,14 @@ class GetDoctorController {
 
 @QueryHandler(GetDoctorQuery)
 class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
-  private readonly getDoctorById: (doctorId: string) => Promise<Doctor> =
-    itemBasedActionGenerator(
-      Doctor,
-      DOCTOR_ID_PREFIX,
-      DOCTOR_ID_PREFIX,
-      ITEM_BASED_ACTIONS.GET,
-    );
+  private readonly itemActions = itemActionGenerator(
+    Doctor,
+    [ITEM_BASED_ACTIONS.GET],
+    DOCTOR_ID_PREFIX,
+  ) as IDoctorActions;
 
   async execute({ doctorId }: GetDoctorQuery) {
-    const doctor = await this.getDoctorById(doctorId);
+    const doctor = await this.itemActions.one(doctorId);
     if (!doctor) {
       throw new DoctorNotFoundException(doctorId);
     }

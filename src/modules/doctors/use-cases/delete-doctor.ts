@@ -8,12 +8,17 @@ import {
 
 import {
   ITEM_BASED_ACTIONS,
-  itemBasedActionGenerator,
+  itemActionGenerator,
 } from 'src/dynamo/resource-fn';
 
 import { DOCTOR_ID_PREFIX, Doctor } from 'src/core';
 
 import { DoctorNotFoundException } from '../doctor.exceptions';
+
+interface IDoctorActions {
+  one: (doctorId: string) => Promise<Doctor | undefined>;
+  remove: (doctorId: string) => Promise<Doctor | undefined>;
+}
 
 class DeleteDoctorCommand {
   constructor(public readonly doctorId: string) {}
@@ -31,27 +36,18 @@ class DeleteDoctorController {
 
 @CommandHandler(DeleteDoctorCommand)
 class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
-  private readonly getDoctorById: (doctorId: string) => Promise<Doctor> =
-    itemBasedActionGenerator(
-      Doctor,
-      DOCTOR_ID_PREFIX,
-      DOCTOR_ID_PREFIX,
-      ITEM_BASED_ACTIONS.GET,
-    );
-  private readonly deleteDoctorById: (doctorId: string) => Promise<Doctor> =
-    itemBasedActionGenerator(
-      Doctor,
-      DOCTOR_ID_PREFIX,
-      DOCTOR_ID_PREFIX,
-      ITEM_BASED_ACTIONS.DELETE,
-    );
+  private readonly itemActions = itemActionGenerator(
+    Doctor,
+    [ITEM_BASED_ACTIONS.GET, ITEM_BASED_ACTIONS.DELETE],
+    DOCTOR_ID_PREFIX,
+  ) as unknown as IDoctorActions;
 
   async execute({ doctorId }: DeleteDoctorCommand) {
-    const doctor = await this.getDoctorById(doctorId);
+    const doctor = await this.itemActions.one(doctorId);
     if (!doctor) {
       throw new DoctorNotFoundException(doctorId);
     }
-    return this.deleteDoctorById(doctorId);
+    return this.itemActions.remove(doctorId);
   }
 }
 
