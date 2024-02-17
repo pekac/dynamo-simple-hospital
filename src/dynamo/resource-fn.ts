@@ -4,7 +4,7 @@ import {
   GetCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { curry, flowRight } from 'lodash/fp';
+import { curry } from 'lodash/fp';
 
 import { DATA_TABLE, client as documentClient, objToUpdateExpression } from '.';
 
@@ -30,6 +30,24 @@ export enum ITEM_BASED_ACTIONS {
   DELETE,
 }
 
+function compose(...fns: Function[]): (x: any) => Promise<any> {
+  const length = fns.length;
+  for (const fn of fns) {
+    if (typeof fn !== 'function') {
+      throw new TypeError('Dont mess around');
+    }
+  }
+  const orderedFns = fns.reverse();
+
+  return async function (x: any) {
+    for (const fn of orderedFns) {
+      x = await fn(x);
+    }
+
+    return x;
+  };
+}
+
 export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
   entityTemplate: { new (): T },
   pkPrefix: string,
@@ -49,7 +67,6 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
   function mapToEntity(
     record: Record<string, number | string> | undefined = {},
   ): T {
-    console.log('record:', record);
     const keys: string[] = Object.keys(record);
     const entity: T = new entityTemplate();
     const keyNames: string[] = Object.keys(entity);
@@ -64,7 +81,6 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
       }
       return entity;
     }, entity);
-    console.log('res:', res);
 
     return res;
   }
@@ -72,7 +88,6 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
   async function one(
     key: ItemKey,
   ): Promise<Record<string, number | string> | undefined> {
-    console.log('key:', key);
     const command = new GetCommand({
       TableName: tableName,
       Key: key,
@@ -83,7 +98,6 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
       return undefined;
     }
 
-    console.log('Item:', Item);
     return Item;
   }
 
@@ -127,15 +141,15 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
     // }
 
     case ITEM_BASED_ACTIONS.GET: {
-      return flowRight(mapToEntity, one, curry(generateItemKey));
+      return compose(mapToEntity, one, curry(generateItemKey));
     }
 
     case ITEM_BASED_ACTIONS.UPDATE: {
-      return flowRight(mapToEntity, update, curry(generateItemKey));
+      return compose(mapToEntity, update, curry(generateItemKey));
     }
 
     case ITEM_BASED_ACTIONS.DELETE: {
-      return flowRight(remove, curry(generateItemKey));
+      return compose(remove, curry(generateItemKey));
     }
 
     default: {
