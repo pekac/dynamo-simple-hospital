@@ -65,13 +65,17 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
   }
 
   function mapToEntity(
-    record: Record<string, number | string> | undefined = {},
-  ): T {
+    record: Record<string, number | string> | undefined,
+  ): T | undefined {
+    if (!record) {
+      return undefined;
+    }
+
     const keys: string[] = Object.keys(record);
     const entity: T = new entityTemplate();
     const keyNames: string[] = Object.keys(entity);
 
-    const res = keys.reduce((entity, key) => {
+    return keys.reduce((entity, key) => {
       const transformedKey = decapitalize(key);
       if (keyNames.includes(transformedKey)) {
         entity = {
@@ -81,8 +85,6 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
       }
       return entity;
     }, entity);
-
-    return res;
   }
 
   async function one(
@@ -93,8 +95,7 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
       Key: key,
     });
     const { Item } = await client.send(command);
-
-    return Item || undefined;
+    return Item;
   }
 
   function transformUpdateArgs(
@@ -134,10 +135,6 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
   }
 
   switch (action) {
-    // case ITEM_BASED_ACTIONS.CREATE: {
-    //   return one; // apply: generate key, db query, map to entity
-    // }
-
     case ITEM_BASED_ACTIONS.GET: {
       return compose(mapToEntity, one, curry(generateItemKey));
     }
@@ -151,7 +148,7 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
     }
 
     default: {
-      return (...args: any) => {
+      return () => {
         throw new Error('dont mess around');
       };
     }

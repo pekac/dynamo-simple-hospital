@@ -11,9 +11,9 @@ import {
   itemBasedActionGenerator,
 } from 'src/dynamo/resource-fn';
 
-import { DoctorNotFoundException } from '../doctor.exceptions';
+import { Doctor, DOCTOR_ID_PREFIX } from 'src/core';
 
-import { Doctor, DOCTOR_ID_PREFIX } from '../../../core';
+import { DoctorNotFoundException } from '../doctor.exceptions';
 
 class GetDoctorQuery {
   constructor(public readonly doctorId: string) {}

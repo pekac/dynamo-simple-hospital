@@ -6,6 +6,13 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
+import {
+  ITEM_BASED_ACTIONS,
+  itemBasedActionGenerator,
+} from 'src/dynamo/resource-fn';
+
+import { DOCTOR_ID_PREFIX, Doctor } from 'src/core';
+
 import { DoctorNotFoundException } from '../doctor.exceptions';
 
 class DeleteDoctorCommand {
@@ -24,18 +31,27 @@ class DeleteDoctorController {
 
 @CommandHandler(DeleteDoctorCommand)
 class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
-  constructor() {}
+  private readonly getDoctorById: (doctorId: string) => Promise<Doctor> =
+    itemBasedActionGenerator(
+      Doctor,
+      DOCTOR_ID_PREFIX,
+      DOCTOR_ID_PREFIX,
+      ITEM_BASED_ACTIONS.GET,
+    );
+  private readonly deleteDoctorById: (doctorId: string) => Promise<Doctor> =
+    itemBasedActionGenerator(
+      Doctor,
+      DOCTOR_ID_PREFIX,
+      DOCTOR_ID_PREFIX,
+      ITEM_BASED_ACTIONS.DELETE,
+    );
 
   async execute({ doctorId }: DeleteDoctorCommand) {
-    try {
-      // const doctor = await this.doctorsService.one(doctorId);
-      // if (!doctor) {
-      //   throw new DoctorNotFoundException(doctorId);
-      // }
-      // return this.doctorsService.remove(doctorId);
-    } catch (e) {
-      throw new Error(e.message);
+    const doctor = await this.getDoctorById(doctorId);
+    if (!doctor) {
+      throw new DoctorNotFoundException(doctorId);
     }
+    return this.deleteDoctorById(doctorId);
   }
 }
 
