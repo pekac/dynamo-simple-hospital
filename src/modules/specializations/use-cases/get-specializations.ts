@@ -5,14 +5,13 @@ import {
   QueryBus,
   CqrsModule,
 } from '@nestjs/cqrs';
+import { GetCommand } from '@aws-sdk/lib-dynamodb';
 
-import { ISpecializationService } from '../specialization.interface';
+import { SPECIALIZATION_KEY } from 'src/core';
 
-import { SpecializationService } from '../specialization.service';
+import { DATA_TABLE, client } from 'src/dynamo';
 
-class GetSpecializationsQuery {
-  constructor() {}
-}
+class GetSpecializationsQuery {}
 
 @Controller()
 class GetSpecializationsController {
@@ -28,21 +27,19 @@ class GetSpecializationsController {
 class GetSpecializationsHandler
   implements IQueryHandler<GetSpecializationsQuery>
 {
-  constructor(
-    private readonly specializationsService: ISpecializationService,
-  ) {}
-
-  execute() {
-    return this.specializationsService.getSpecializations();
+  async execute() {
+    const command = new GetCommand({
+      TableName: DATA_TABLE,
+      Key: SPECIALIZATION_KEY,
+    });
+    const { Item } = await client.send(command);
+    return Array.from(Item?.Specializations || new Set([]));
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [GetSpecializationsController],
-  providers: [
-    GetSpecializationsHandler,
-    { provide: ISpecializationService, useClass: SpecializationService },
-  ],
+  providers: [GetSpecializationsHandler],
 })
 export class GetSpecializationsModule {}
