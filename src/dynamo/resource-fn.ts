@@ -8,15 +8,14 @@ import { curry } from 'lodash/fp';
 
 import { DATA_TABLE, client as documentClient, objToUpdateExpression } from '.';
 
-import { decapitalize } from '../utils/text';
+import { compose, decapitalize } from '../utils';
 
-export type Key = 'PK' | 'SK';
-export type ItemKey = {
+type Key = 'PK' | 'SK';
+type ItemKey = {
   [key in Key]: string;
 };
-export type PrimaryKey = string | { pk: string; sk: string };
 
-export interface IResource<T> {
+interface IResource<T> {
   create(createDto: T, parentId?: string): Promise<T | undefined>;
   one(pk: string, sk: string): Promise<T | undefined>;
   update(pk: string, sk: string, updateDto: Partial<T>): Promise<T>;
@@ -30,30 +29,12 @@ export enum ITEM_BASED_ACTIONS {
   DELETE,
 }
 
-function compose(...fns: Function[]): (x: any) => Promise<any> {
-  const length = fns.length;
-  for (const fn of fns) {
-    if (typeof fn !== 'function') {
-      throw new TypeError('Dont mess around');
-    }
-  }
-  const orderedFns = fns.reverse();
-
-  return async function (x: any) {
-    for (const fn of orderedFns) {
-      x = await fn(x);
-    }
-
-    return x;
-  };
-}
-
-export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
+export function itemActionGenerator<T extends Record<keyof T, any>>(
   entityTemplate: { new (): T },
+  actions: ITEM_BASED_ACTIONS[],
   pkPrefix: string,
-  skPrefix: string,
-  action: ITEM_BASED_ACTIONS,
-) {
+  skPrefix: string = pkPrefix,
+): Partial<IResource<T>> {
   const client: DynamoDBDocumentClient = documentClient;
   const tableName: string = DATA_TABLE;
 
@@ -134,23 +115,20 @@ export function itemBasedActionGenerator<T extends Record<keyof T, any>>(
     return result;
   }
 
-  switch (action) {
-    case ITEM_BASED_ACTIONS.GET: {
-      return compose(mapToEntity, one, curry(generateItemKey));
-    }
-
-    case ITEM_BASED_ACTIONS.UPDATE: {
-      return compose(mapToEntity, update, curry(generateItemKey));
-    }
-
-    case ITEM_BASED_ACTIONS.DELETE: {
-      return compose(remove, curry(generateItemKey));
-    }
-
-    default: {
-      return () => {
-        throw new Error('dont mess around');
-      };
-    }
+  const itemActions: Partial<IResource<T>> = {};
+  if (actions.includes(ITEM_BASED_ACTIONS.CREATE)) {
+    /* remove create? */
+    itemActions.create = compose(mapToEntity, one, curry(generateItemKey));
   }
+  if (actions.includes(ITEM_BASED_ACTIONS.GET)) {
+    itemActions.one = compose(mapToEntity, one, curry(generateItemKey));
+  }
+  if (actions.includes(ITEM_BASED_ACTIONS.UPDATE)) {
+    itemActions.update = compose(mapToEntity, update, curry(generateItemKey));
+  }
+  if (actions.includes(ITEM_BASED_ACTIONS.DELETE)) {
+    itemActions.remove = compose(remove, curry(generateItemKey));
+  }
+
+  return itemActions;
 }
