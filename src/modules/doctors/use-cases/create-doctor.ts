@@ -13,24 +13,41 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { DOCTOR_ID_PREFIX, Doctor } from 'src/core';
+import { DoctorsResource } from 'src/core';
 
-import { ITEM_BASED_ACTIONS, ItemKey, itemActionGenerator } from 'src/dynamo';
+import { ItemKey } from 'src/dynamo';
 
-import { CreateDoctorDto } from '../doctor.dto';
-
-import { DoctorAlreadyExistsException } from '../doctor.exceptions';
-
-interface IDoctorActions {
-  create(
-    createDto: Partial<Doctor>,
-    parentId?: string,
-  ): Promise<string | undefined>;
-  one: (doctorId: string) => Promise<Doctor | undefined>;
-}
+import { CreateDoctorDto, DoctorAlreadyExistsException } from '../common';
 
 class CreateDoctorCommand {
   constructor(public readonly createDoctorDto: CreateDoctorDto) {}
+}
+
+@Controller()
+class CreateDoctorController {
+  constructor(private readonly commandBus: CommandBus) {}
+
+  @Post('doctors')
+  @UsePipes(new ValidationPipe())
+  createDoctor(@Body() createDoctorDto: CreateDoctorDto) {
+    return this.commandBus.execute(new CreateDoctorCommand(createDoctorDto));
+  }
+}
+
+@CommandHandler(CreateDoctorCommand)
+class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
+  constructor(private readonly doctors: DoctorsResource) {}
+
+  async execute({ createDoctorDto }: CreateDoctorCommand) {
+    const doctor = await this.doctors.one(createDoctorDto.id);
+    if (doctor) {
+      throw new DoctorAlreadyExistsException(createDoctorDto.id);
+    }
+    return this.doctors.create({
+      dto: createDoctorDto,
+      decorator: decorateDoctor,
+    });
+  }
 }
 
 function decorateDoctor(doctor: CreateDoctorDto & ItemKey) {
@@ -50,38 +67,9 @@ function decorateDoctor(doctor: CreateDoctorDto & ItemKey) {
   };
 }
 
-@Controller()
-class CreateDoctorController {
-  constructor(private readonly commandBus: CommandBus) {}
-
-  @Post('doctors')
-  @UsePipes(new ValidationPipe())
-  createDoctor(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.commandBus.execute(new CreateDoctorCommand(createDoctorDto));
-  }
-}
-
-@CommandHandler(CreateDoctorCommand)
-class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
-  private readonly itemActions = itemActionGenerator({
-    entityTemplate: Doctor,
-    actions: [ITEM_BASED_ACTIONS.CREATE, ITEM_BASED_ACTIONS.GET],
-    pkPrefix: DOCTOR_ID_PREFIX,
-    decorate: decorateDoctor,
-  }) as IDoctorActions;
-
-  async execute({ createDoctorDto }: CreateDoctorCommand) {
-    const doctor = await this.itemActions.one(createDoctorDto.id);
-    if (doctor) {
-      throw new DoctorAlreadyExistsException(createDoctorDto.id);
-    }
-    return this.itemActions.create(createDoctorDto);
-  }
-}
-
 @Module({
   imports: [CqrsModule],
   controllers: [CreateDoctorController],
-  providers: [CreateDoctorHandler],
+  providers: [CreateDoctorHandler, DoctorsResource],
 })
 export class CreateDoctorModule {}

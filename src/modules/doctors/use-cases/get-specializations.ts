@@ -6,9 +6,10 @@ import {
   CqrsModule,
 } from '@nestjs/cqrs';
 
-import { getSpecializationsQuery } from '../common';
-
-import { NoSpecializationsFoundException } from '../doctor.exceptions';
+import {
+  getSpecializationsQuery,
+  NoSpecializationsFoundException,
+} from '../common';
 
 class GetSpecializationsQuery {}
 

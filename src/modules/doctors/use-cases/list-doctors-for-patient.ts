@@ -11,9 +11,10 @@ import { DOCTOR_ID_PREFIX, Doctor, PATIENT_ID_PREFIX } from 'src/core';
 
 import { DATA_TABLE, client } from 'src/dynamo';
 
-import { ListDoctorsForPatientDto } from '../doctor.dto';
-
-import { NoDoctorsFoundForPatientException } from '../doctor.exceptions';
+import {
+  ListDoctorsForPatientDto,
+  NoDoctorsFoundForPatientException,
+} from '../common';
 
 class ListDoctorsForPatientQuery {
   constructor(

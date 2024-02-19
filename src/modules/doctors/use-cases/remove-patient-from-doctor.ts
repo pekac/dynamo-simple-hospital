@@ -6,6 +6,8 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
+import { DoctorPatientsResource } from 'src/core';
+
 class RemovePatientFromDoctorCommand {
   constructor(
     public readonly doctorId: string,
@@ -32,16 +34,16 @@ class RemovePatientFromDoctorController {
 class RemovePatientFromDoctorHandler
   implements ICommandHandler<RemovePatientFromDoctorCommand>
 {
-  constructor() {}
+  constructor(private readonly doctorPatients: DoctorPatientsResource) {}
 
   async execute({ doctorId, patientId }: RemovePatientFromDoctorCommand) {
-    // return this.doctorsService.removePatientFromDoctor(doctorId, patientId);
+    return this.doctorPatients.remove(doctorId, patientId);
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [RemovePatientFromDoctorController],
-  providers: [RemovePatientFromDoctorHandler],
+  providers: [DoctorPatientsResource, RemovePatientFromDoctorHandler],
 })
 export class RemovePatientFromDoctorModule {}

@@ -6,19 +6,9 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import {
-  ITEM_BASED_ACTIONS,
-  itemActionGenerator,
-} from 'src/dynamo/resource-fn';
+import { DoctorsResource } from 'src/core';
 
-import { DOCTOR_ID_PREFIX, Doctor } from 'src/core';
-
-import { DoctorNotFoundException } from '../doctor.exceptions';
-
-interface IDoctorActions {
-  one: (doctorId: string) => Promise<Doctor | undefined>;
-  remove: (doctorId: string) => Promise<Doctor | undefined>;
-}
+import { DoctorNotFoundException } from '../common';
 
 class DeleteDoctorCommand {
   constructor(public readonly doctorId: string) {}
@@ -36,24 +26,20 @@ class DeleteDoctorController {
 
 @CommandHandler(DeleteDoctorCommand)
 class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
-  private readonly itemActions = itemActionGenerator({
-    entityTemplate: Doctor,
-    actions: [ITEM_BASED_ACTIONS.GET, ITEM_BASED_ACTIONS.DELETE],
-    pkPrefix: DOCTOR_ID_PREFIX,
-  }) as unknown as IDoctorActions;
+  constructor(private readonly doctors: DoctorsResource) {}
 
   async execute({ doctorId }: DeleteDoctorCommand) {
-    const doctor = await this.itemActions.one(doctorId);
+    const doctor = await this.doctors.one(doctorId);
     if (!doctor) {
       throw new DoctorNotFoundException(doctorId);
     }
-    return this.itemActions.remove(doctorId);
+    return this.doctors.remove(doctorId);
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [DeleteDoctorController],
-  providers: [DeleteDoctorHandler],
+  providers: [DeleteDoctorHandler, DoctorsResource],
 })
 export class DeleteDoctorModule {}

@@ -14,7 +14,15 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { AssignPatientToDoctorDto } from '../doctor.dto';
+import { Doctor, DoctorPatientsResource, DoctorsResource } from 'src/core';
+
+import { ItemKey } from 'src/dynamo';
+
+import {
+  AssignPatientToDoctorDto,
+  DoctorNotFoundException,
+  PatientAlreadyExistsException,
+} from '../common';
 
 class AssignPatientToDoctorCommand {
   constructor(
@@ -43,16 +51,61 @@ class AssignPatientToDoctorController {
 class AssignPatientToDoctorHandler
   implements ICommandHandler<AssignPatientToDoctorCommand>
 {
-  constructor() {}
+  constructor(
+    private readonly doctors: DoctorsResource,
+    private readonly doctorPatients: DoctorPatientsResource,
+  ) {}
 
   async execute({ doctorId, assignPatientDto }: AssignPatientToDoctorCommand) {
-    // return this.doctorsService.addPatient(doctorId, assignPatientDto);
+    /* all of this in a tx */
+    const doctor = await this.doctors.one(doctorId);
+    if (!doctor) {
+      throw new DoctorNotFoundException(doctorId);
+    }
+
+    const doctorPatient = await this.doctorPatients.one(
+      doctorId,
+      assignPatientDto.id,
+    );
+    if (doctorPatient) {
+      throw new PatientAlreadyExistsException(doctorId, assignPatientDto.id);
+    }
+
+    const decorator = generateDecorator(doctor);
+
+    return this.doctorPatients.create({
+      dto: assignPatientDto,
+      parentId: doctorId,
+      decorator,
+    });
   }
+}
+
+function generateDecorator(doctor: Doctor & ItemKey) {
+  return function transformDoctorPatient(
+    addPatientDto: AssignPatientToDoctorDto & ItemKey,
+  ) {
+    return {
+      PatientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
+      PatientId: addPatientDto.id,
+      DoctorName: `${doctor?.firstName} ${doctor?.lastName}`,
+      Specialization: doctor?.specialization,
+      DoctorId: doctor.id,
+      PK: doctor.PK,
+      SK: addPatientDto.PK,
+      GSI3PK: addPatientDto.PK,
+      GSI3SK: doctor.PK,
+    };
+  };
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [AssignPatientToDoctorController],
-  providers: [AssignPatientToDoctorHandler],
+  providers: [
+    AssignPatientToDoctorHandler,
+    DoctorsResource,
+    DoctorPatientsResource,
+  ],
 })
 export class AssignPatientToDoctorModule {}

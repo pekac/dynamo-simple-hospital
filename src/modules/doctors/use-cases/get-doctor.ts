@@ -6,18 +6,9 @@ import {
   CqrsModule,
 } from '@nestjs/cqrs';
 
-import {
-  ITEM_BASED_ACTIONS,
-  itemActionGenerator,
-} from 'src/dynamo/resource-fn';
+import { DoctorsResource } from 'src/core';
 
-import { Doctor, DOCTOR_ID_PREFIX } from 'src/core';
-
-import { DoctorNotFoundException } from '../doctor.exceptions';
-
-interface IDoctorActions {
-  one: (doctorId: string) => Promise<Doctor | undefined>;
-}
+import { DoctorNotFoundException } from '../common';
 
 class GetDoctorQuery {
   constructor(public readonly doctorId: string) {}
@@ -35,14 +26,10 @@ class GetDoctorController {
 
 @QueryHandler(GetDoctorQuery)
 class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
-  private readonly itemActions = itemActionGenerator({
-    entityTemplate: Doctor,
-    actions: [ITEM_BASED_ACTIONS.GET],
-    pkPrefix: DOCTOR_ID_PREFIX,
-  }) as IDoctorActions;
+  constructor(private readonly doctors: DoctorsResource) {}
 
   async execute({ doctorId }: GetDoctorQuery) {
-    const doctor = await this.itemActions.one(doctorId);
+    const doctor = await this.doctors.one(doctorId);
     if (!doctor) {
       throw new DoctorNotFoundException(doctorId);
     }
@@ -54,6 +41,6 @@ class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
 @Module({
   imports: [CqrsModule],
   controllers: [GetDoctorController],
-  providers: [GetDoctorHandler],
+  providers: [DoctorsResource, GetDoctorHandler],
 })
 export class GetDoctorModule {}

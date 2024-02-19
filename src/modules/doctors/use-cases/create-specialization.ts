@@ -18,7 +18,7 @@ import { SPECIALIZATION_KEY } from 'src/core';
 
 import { DATA_TABLE, client } from 'src/dynamo';
 
-import { CreateSpecializationDto } from '../doctor.dto';
+import { CreateSpecializationDto } from '../common';
 
 class CreateSpecializationCommand {
   constructor(public readonly specialization: string) {}

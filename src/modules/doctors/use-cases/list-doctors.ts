@@ -13,14 +13,12 @@ import { DATA_TABLE, client, crossPartitionEntityList } from 'src/dynamo';
 
 import { arraySubset, capitalize } from 'src/utils';
 
-import { getSpecializationsQuery } from '../common';
-
-import { ListDoctorsDto } from '../doctor.dto';
-
 import {
+  getSpecializationsQuery,
+  ListDoctorsDto,
   NoDoctorsFoundException,
   NoSpecializationsFoundException,
-} from '../doctor.exceptions';
+} from '../common';
 
 class ListDoctorsQuery {
   constructor(public readonly queryParams: ListDoctorsDto) {}
