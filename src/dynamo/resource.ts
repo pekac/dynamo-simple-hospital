@@ -2,6 +2,7 @@ import {
   DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
+  PutCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
@@ -9,48 +10,67 @@ import { DATA_TABLE, client, objToUpdateExpression } from '.';
 
 import { decapitalize } from '../utils/text';
 
+type ID = { id: string };
 export type Key = 'PK' | 'SK';
 export type ItemKey = {
   [key in Key]: string;
 };
 export type PrimaryKey = string | { pk: string; sk: string };
 
+export function IDENTITY<T>(value: T): T {
+  return value;
+}
+
+interface CreateItem<T> {
+  dto: any & ID;
+  parentId?: string;
+  decorator?: (obj: any) => any;
+}
+
 export interface IResource<T> {
-  // create(createDto: T, parentId?: string): Promise<T | undefined>;
+  create(createItem: CreateItem<T>): Promise<string | undefined>;
   one(pk: string, sk: string): Promise<T | undefined>;
   update(pk: string, sk: string, updateDto: Partial<T>): Promise<T>;
   remove(pk: string, sk: string): Promise<string>;
 }
 
+interface CreateResource<T> {
+  entityTemplate: { new (): T };
+  pkPrefix: string;
+  skPrefix?: string;
+}
+
 export abstract class Resource<T extends Record<keyof T, any>>
   implements IResource<T>
 {
-  protected readonly client: DynamoDBDocumentClient = client;
-  protected readonly tableName: string = DATA_TABLE;
-  private c: { new (): T };
-  pkPrefix: string;
+  private readonly client: DynamoDBDocumentClient = client;
+  private readonly tableName: string = DATA_TABLE;
+  private entityTemplate: { new (): T };
+  private pkPrefix: string;
   skPrefix: string;
 
-  constructor(c: { new (): T }, pkPrefix: string, skPrefix: string = pkPrefix) {
-    this.c = c;
+  constructor({
+    entityTemplate,
+    pkPrefix,
+    skPrefix = pkPrefix,
+  }: CreateResource<T>) {
+    this.entityTemplate = entityTemplate;
     this.pkPrefix = pkPrefix;
     this.skPrefix = skPrefix;
   }
 
-  // abstract create(createDto: T, parentId?: string): Promise<T | undefined>;
-
-  protected generateItemKey(pk: string, sk: string = pk): ItemKey {
+  private generateItemKey(pk: string, sk: string = pk): ItemKey {
     return {
       PK: `${this.pkPrefix}${pk}`,
       SK: `${this.skPrefix}${sk}`,
     };
   }
 
-  protected mapToEntity(
+  private mapToEntity(
     record: Record<string, number | string> | undefined = {},
   ): T {
     const keys: string[] = Object.keys(record);
-    const entity: T = new this.c();
+    const entity: T = new this.entityTemplate();
     const keyNames: string[] = Object.keys(entity);
 
     return keys.reduce((entity, key) => {
@@ -63,6 +83,24 @@ export abstract class Resource<T extends Record<keyof T, any>>
       }
       return entity;
     }, entity);
+  }
+
+  async create({
+    dto,
+    parentId,
+    decorator = IDENTITY,
+  }: CreateItem<T>): Promise<string | undefined> {
+    const pk = parentId || dto.id;
+    const sk = dto.id;
+    const primaryKey = this.generateItemKey(pk, sk);
+    const item = decorator({ ...primaryKey, ...dto });
+
+    const command = new PutCommand({
+      TableName: this.tableName,
+      Item: item,
+    });
+    await this.client.send(command);
+    return dto.id;
   }
 
   async one(...args: [string, string?]): Promise<T | undefined> {
