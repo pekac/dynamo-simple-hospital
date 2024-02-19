@@ -2,6 +2,7 @@ import {
   DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
+  PutCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { curry } from 'lodash/fp';
@@ -22,6 +23,14 @@ interface IResource<T> {
   remove(pk: string, sk: string): Promise<string>;
 }
 
+interface IItemActionGenerator<T> {
+  entityTemplate: { new (): T };
+  actions: ITEM_BASED_ACTIONS[];
+  decorate?: (entity: T) => T;
+  pkPrefix: string;
+  skPrefix?: string;
+}
+
 export enum ITEM_BASED_ACTIONS {
   CREATE,
   GET,
@@ -29,12 +38,19 @@ export enum ITEM_BASED_ACTIONS {
   DELETE,
 }
 
-export function itemActionGenerator<T extends Record<keyof T, any>>(
-  entityTemplate: { new (): T },
-  actions: ITEM_BASED_ACTIONS[],
-  pkPrefix: string,
-  skPrefix: string = pkPrefix,
-): Partial<IResource<T>> {
+type ID = { id: string };
+
+export function IDENTITY<T>(value: T): T {
+  return value;
+}
+
+export function itemActionGenerator<T extends Record<keyof T, any>>({
+  actions,
+  entityTemplate,
+  decorate = IDENTITY,
+  pkPrefix,
+  skPrefix = pkPrefix,
+}: IItemActionGenerator<T>): Partial<IResource<T>> {
   const client: DynamoDBDocumentClient = documentClient;
   const tableName: string = DATA_TABLE;
 
@@ -42,6 +58,14 @@ export function itemActionGenerator<T extends Record<keyof T, any>>(
     return {
       PK: `${pkPrefix}${pk}`,
       SK: `${skPrefix}${sk}`,
+    };
+  }
+
+  function decorateWithPrimaryKey<T>(dto: Partial<T> & ID): Partial<T> {
+    const primaryKey = generateItemKey(dto.id);
+    return {
+      ...primaryKey,
+      ...dto,
     };
   }
 
@@ -68,6 +92,15 @@ export function itemActionGenerator<T extends Record<keyof T, any>>(
     }, entity);
   }
 
+  async function create(createDto: Partial<T> & ID): Promise<string> {
+    const command = new PutCommand({
+      TableName: tableName,
+      Item: createDto,
+    });
+    await client.send(command);
+    return createDto.id;
+  }
+
   async function one(
     key: ItemKey,
   ): Promise<Record<string, number | string> | undefined> {
@@ -92,10 +125,7 @@ export function itemActionGenerator<T extends Record<keyof T, any>>(
 
   // const updateExpressionAndValues = objToUpdateExpression(updateDto);
 
-  async function update(
-    key: ItemKey,
-    updateDto: Partial<T>,
-  ): Promise<Record<string, number | string> | undefined> {
+  async function update(key: ItemKey, updateDto: Partial<T>): Promise<string> {
     const command = new UpdateCommand({
       TableName: tableName,
       Key: key,
@@ -103,22 +133,21 @@ export function itemActionGenerator<T extends Record<keyof T, any>>(
       ReturnValues: 'ALL_NEW',
     });
     const result = await client.send(command);
-    return result.Attributes;
+    return result.Attributes?.Id;
   }
 
-  async function remove(key: ItemKey): Promise<any> {
+  async function remove(key: ItemKey): Promise<string> {
     const command = new DeleteCommand({
       TableName: tableName,
       Key: key,
     });
     const result = await client.send(command);
-    return result;
+    return result.Attributes?.Id;
   }
 
   const itemActions: Partial<IResource<T>> = {};
   if (actions.includes(ITEM_BASED_ACTIONS.CREATE)) {
-    /* remove create? */
-    itemActions.create = compose(mapToEntity, one, curry(generateItemKey));
+    itemActions.create = compose(create, decorate, decorateWithPrimaryKey);
   }
   if (actions.includes(ITEM_BASED_ACTIONS.GET)) {
     itemActions.one = compose(mapToEntity, one, curry(generateItemKey));
