@@ -36,11 +36,11 @@ class DeleteDoctorController {
 
 @CommandHandler(DeleteDoctorCommand)
 class DeleteDoctorHandler implements ICommandHandler<DeleteDoctorCommand> {
-  private readonly itemActions = itemActionGenerator(
-    Doctor,
-    [ITEM_BASED_ACTIONS.GET, ITEM_BASED_ACTIONS.DELETE],
-    DOCTOR_ID_PREFIX,
-  ) as unknown as IDoctorActions;
+  private readonly itemActions = itemActionGenerator({
+    entityTemplate: Doctor,
+    actions: [ITEM_BASED_ACTIONS.GET, ITEM_BASED_ACTIONS.DELETE],
+    pkPrefix: DOCTOR_ID_PREFIX,
+  }) as unknown as IDoctorActions;
 
   async execute({ doctorId }: DeleteDoctorCommand) {
     const doctor = await this.itemActions.one(doctorId);

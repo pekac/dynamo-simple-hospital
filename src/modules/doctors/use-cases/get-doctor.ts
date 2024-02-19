@@ -35,11 +35,11 @@ class GetDoctorController {
 
 @QueryHandler(GetDoctorQuery)
 class GetDoctorHandler implements IQueryHandler<GetDoctorQuery> {
-  private readonly itemActions = itemActionGenerator(
-    Doctor,
-    [ITEM_BASED_ACTIONS.GET],
-    DOCTOR_ID_PREFIX,
-  ) as IDoctorActions;
+  private readonly itemActions = itemActionGenerator({
+    entityTemplate: Doctor,
+    actions: [ITEM_BASED_ACTIONS.GET],
+    pkPrefix: DOCTOR_ID_PREFIX,
+  }) as IDoctorActions;
 
   async execute({ doctorId }: GetDoctorQuery) {
     const doctor = await this.itemActions.one(doctorId);

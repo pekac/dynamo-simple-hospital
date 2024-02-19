@@ -118,26 +118,22 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
   }
 
   async execute({ queryParams }: ListDoctorsQuery) {
-    try {
-      const specializations = await getSpecializationsQuery();
+    const specializations = await getSpecializationsQuery();
 
-      if (specializations.length === 0) {
-        throw new NoSpecializationsFoundException();
-      }
-
-      const doctors = await this.listDoctorsBySpecialization(
-        queryParams,
-        specializations,
-      );
-
-      if (doctors.length === 0) {
-        throw new NoDoctorsFoundException();
-      }
-
-      return doctors;
-    } catch (e) {
-      throw new Error(e.message);
+    if (specializations.length === 0) {
+      throw new NoSpecializationsFoundException();
     }
+
+    const doctors = await this.listDoctorsBySpecialization(
+      queryParams,
+      specializations,
+    );
+
+    if (doctors.length === 0) {
+      throw new NoDoctorsFoundException();
+    }
+
+    return doctors;
   }
 }
 

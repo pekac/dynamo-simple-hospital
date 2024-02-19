@@ -14,11 +14,11 @@ import {
 } from '@nestjs/cqrs';
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
-import { CreateSpecializationDto } from '../doctor.dto';
-
 import { SPECIALIZATION_KEY } from 'src/core';
 
 import { DATA_TABLE, client } from 'src/dynamo';
+
+import { CreateSpecializationDto } from '../doctor.dto';
 
 class CreateSpecializationCommand {
   constructor(public readonly specialization: string) {}
@@ -54,12 +54,9 @@ class CreateSpecializationHandler
       },
       ReturnValues: 'ALL_NEW',
     });
-    try {
-      await client.send(command);
-      return specialization;
-    } catch (e) {
-      throw new Error(e.message);
-    }
+
+    await client.send(command);
+    return specialization;
   }
 }
 

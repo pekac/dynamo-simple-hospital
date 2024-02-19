@@ -13,12 +13,13 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
+import { DOCTOR_ID_PREFIX, Doctor } from 'src/core';
+
 import { ITEM_BASED_ACTIONS, ItemKey, itemActionGenerator } from 'src/dynamo';
 
 import { CreateDoctorDto } from '../doctor.dto';
 
 import { DoctorAlreadyExistsException } from '../doctor.exceptions';
-import { DOCTOR_ID_PREFIX, Doctor } from 'src/core';
 
 interface IDoctorActions {
   create(

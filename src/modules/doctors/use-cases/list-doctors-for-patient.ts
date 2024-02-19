@@ -66,6 +66,7 @@ class ListDoctorsForPatientHandler
     });
 
     const { Items = [] } = await client.send(command);
+
     return Items.map((d) => {
       const [firstName, lastName] = d.DoctorName.split(' ');
       return new Doctor(d.DoctorId, firstName, lastName, d.Specialization);
@@ -74,20 +75,16 @@ class ListDoctorsForPatientHandler
 
   async execute({ patientId, queryParams }: ListDoctorsForPatientQuery) {
     const { lastSeen, limit } = queryParams;
-    try {
-      const doctors = await this.listDoctorsForPatient(
-        patientId,
-        limit,
-        lastSeen,
-      );
+    const doctors = await this.listDoctorsForPatient(
+      patientId,
+      limit,
+      lastSeen,
+    );
 
-      if (doctors.length === 0) {
-        throw new NoDoctorsFoundForPatientException(patientId);
-      }
-      return doctors;
-    } catch (e) {
-      throw new Error(e.message);
+    if (doctors.length === 0) {
+      throw new NoDoctorsFoundForPatientException(patientId);
     }
+    return doctors;
   }
 }
 
