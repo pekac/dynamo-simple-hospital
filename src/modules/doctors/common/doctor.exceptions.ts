@@ -2,13 +2,13 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 
 export class DoctorNotFoundException extends NotFoundException {
   constructor(doctorId: string) {
-    super(`Doctor with ID '${doctorId}' not found`);
+    super(`Doctor, ID '${doctorId}', not found`);
   }
 }
 
 export class DoctorAlreadyExistsException extends ConflictException {
   constructor(doctorId: string) {
-    super(`Doctor with ID ${doctorId} already exists`);
+    super(`Doctor, ID ${doctorId}, already exists`);
   }
 }
 
@@ -27,5 +27,13 @@ export class NoDoctorsFoundForPatientException extends NotFoundException {
 export class NoSpecializationsFoundException extends NotFoundException {
   constructor() {
     super('No specializations found');
+  }
+}
+
+export class PatientAlreadyExistsException extends ConflictException {
+  constructor(doctorId: string, patientId: string) {
+    super(
+      `Patient, ID ${patientId}, already assigned to Doctor, ID ${doctorId}`,
+    );
   }
 }
