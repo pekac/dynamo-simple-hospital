@@ -13,49 +13,6 @@ export class DoctorsService extends Resource<Doctor> {
     super(Doctor, DOCTOR_ID_PREFIX);
   }
 
-  async create(doctor: Doctor): Promise<Doctor | undefined> {
-    const createdAt = new Date();
-    const primaryKey = this.generateItemKey(doctor.id);
-    /* for fetching tests */
-    const GSI1PK = primaryKey.PK;
-    const GSI1SK = primaryKey.SK;
-
-    /* for listing by specialization */
-    const specialization = doctor.specialization.toUpperCase();
-    const GSI2PK = `SPECIALIZATION#${specialization}`;
-    const GSI2SK = `${specialization}#${doctor.id}`;
-
-    /* for listing patients */
-    const GSI3PK = primaryKey.PK;
-    const GSI3SK = primaryKey.SK;
-
-    const item = {
-      ...primaryKey,
-      Id: doctor.id,
-      FirstName: doctor.firstName,
-      LastName: doctor.lastName,
-      Specialization: doctor.specialization,
-      CreatedAt: createdAt.toISOString(),
-      GSI1PK,
-      GSI1SK,
-      GSI2PK,
-      GSI2SK,
-      GSI3PK,
-      GSI3SK,
-    };
-
-    const command = new PutCommand({
-      TableName: this.tableName,
-      Item: item,
-    });
-    try {
-      await this.client.send(command);
-      return this.mapToEntity(item);
-    } catch (e) {
-      return undefined;
-    }
-  }
-
   async addPatient(
     doctorId: string,
     addPatientDto: AssignPatientToDoctorDto,
