@@ -1,4 +1,4 @@
-import { CreateTestDto } from './test.dto';
+import { CreateTestDto } from './common/test.dto';
 
 import { Test } from '../../core/entities/test.entity';
 

@@ -14,13 +14,10 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { CreateTestDto } from '../test.dto';
+import { TestsResource } from 'src/core';
 
-import { Test } from '../../../core/entities/test.entity';
+import { CreateTestDto, TestAlreadyExistsException } from '../common';
 
-import { ITestsService } from '../test.interface';
-
-import { TestsService } from '../tests.service';
 class CreateTestForPatientCommand {
   constructor(
     public readonly patientId: string,
@@ -48,22 +45,19 @@ class CreateTestForPatientController {
 class CreateTestForPatientHandler
   implements ICommandHandler<CreateTestForPatientCommand>
 {
-  constructor(private readonly testsService: ITestsService) {}
+  constructor(private readonly tests: TestsResource) {}
 
   async execute({
     patientId,
     createTestDto,
-  }: CreateTestForPatientCommand): Promise<Test | undefined> {
-    return this.testsService.create(createTestDto, patientId);
+  }: CreateTestForPatientCommand): Promise<string | undefined> {
+    return this.tests.create({ dto: createTestDto, parentId: patientId });
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [CreateTestForPatientController],
-  providers: [
-    CreateTestForPatientHandler,
-    { provide: ITestsService, useClass: TestsService },
-  ],
+  providers: [CreateTestForPatientHandler, TestsResource],
 })
 export class CreateTestForPatientModule {}

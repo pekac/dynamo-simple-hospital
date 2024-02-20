@@ -8,9 +8,6 @@ import { ITestsService } from './test.interface';
 
 import { Resource } from '../../dynamo/';
 
-export const TEST_PK_PREFIX = PATIENT_ID_PREFIX;
-export const TEST_SK_PREFIX = '#TEST#';
-
 @Injectable()
 export class TestsService extends Resource<Test> implements ITestsService {
   constructor() {

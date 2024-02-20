@@ -6,7 +6,7 @@ import {
   QueryHandler,
 } from '@nestjs/cqrs';
 
-import { ListTestsParamsDto } from '../test.dto';
+import { ListTestsParamsDto } from '../common/test.dto';
 
 import { ITestsService } from '../test.interface';
 

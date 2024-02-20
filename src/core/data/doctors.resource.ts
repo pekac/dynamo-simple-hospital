@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import { DOCTOR_ID_PREFIX, Doctor } from '../';
+import { DOCTOR_ID_PREFIX, Doctor } from '..';
 
-import { Resource } from '../../dynamo';
+import { Resource } from 'src/dynamo';
 
 @Injectable()
 export class DoctorsResource extends Resource<Doctor> {
