@@ -6,17 +6,13 @@ import {
   CqrsModule,
 } from '@nestjs/cqrs';
 
-import { ListPatientsDto } from '../patient.dto';
+import { Patient, PatientsResource } from 'src/core';
 
-import { Patient } from '../../../core/entities/patient.entity';
+import { crossPartitionEntityList } from 'src/dynamo';
 
-import { IPatientsService } from '../patient.interface';
+import { truncateDateToWeek } from 'src/utils';
 
-import { PatientsService } from '../patients.service';
-
-import { crossPartitionEntityList } from '../../../dynamo';
-
-import { truncateDateToWeek } from '../../../utils';
+import { ListPatientsDto } from '../common/patient.dto';
 
 class ListPatientsQuery {
   constructor(public readonly queryParams: ListPatientsDto) {}
@@ -34,16 +30,7 @@ class ListPatientsController {
 
 @QueryHandler(ListPatientsQuery)
 class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
-  constructor(private readonly patientsService: IPatientsService) {}
-
-  async execute({ queryParams }: ListPatientsQuery) {
-    if (queryParams.sortBy === 'lastName') {
-      return this.getPatientsByLastName(queryParams);
-    }
-
-    return this.getPatientsByCreatedAt(queryParams);
-  }
-
+  constructor(private readonly patients: PatientsResource) {}
   async getPatientsByCreatedAt({
     lastSeen = '$',
     limit,
@@ -56,7 +43,7 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
     const shouldContinue = (col: string) => col >= lastCollection;
 
     const getItems = (col: string, limit: number) =>
-      this.patientsService.listByCreatedAt(col, limit, lastSeen);
+      this.patients.listByCreatedAt(col, limit, lastSeen);
 
     const updateCollection = (
       col: string,
@@ -91,7 +78,7 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
       col.charCodeAt(0) <= lastCollection.charCodeAt(0);
 
     const getItems = (col: string, limit: number, lastSeen = '$') =>
-      this.patientsService.listByLastName(col, limit, lastSeen.toUpperCase());
+      this.patients.listByLastName(col, limit, lastSeen.toUpperCase());
 
     const updateCollection = (
       col: string,
@@ -109,14 +96,19 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
       updateCollection,
     });
   }
+
+  async execute({ queryParams }: ListPatientsQuery) {
+    if (queryParams.sortBy === 'lastName') {
+      return this.getPatientsByLastName(queryParams);
+    }
+
+    return this.getPatientsByCreatedAt(queryParams);
+  }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [ListPatientsController],
-  providers: [
-    ListPatientsHandler,
-    { provide: IPatientsService, useClass: PatientsService },
-  ],
+  providers: [ListPatientsHandler, PatientsResource],
 })
 export class ListPatientsModule {}

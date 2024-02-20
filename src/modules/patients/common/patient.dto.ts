@@ -10,6 +10,7 @@ export class CreatePatientDto {
 
   @IsString()
   lastName: string;
+
   @IsNumber()
   age: number;
 }

@@ -5,10 +5,16 @@ import {
   QueryBus,
   CqrsModule,
 } from '@nestjs/cqrs';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { ListPatientsForDoctorDto } from '../patient.dto';
-import { IPatientsService } from '../patient.interface';
-import { PatientsService } from '../patients.service';
+import { DOCTOR_ID_PREFIX, PATIENT_ID_PREFIX, Patient } from 'src/core';
+
+import { DATA_TABLE, client } from 'src/dynamo';
+
+import {
+  ListPatientsForDoctorDto,
+  NoPatientsFoundForDoctorException,
+} from '../common';
 
 class ListPatientsForDoctorQuery {
   constructor(
@@ -36,24 +42,55 @@ class ListPatientsForDoctorController {
 class ListPatientsForDoctorHandler
   implements IQueryHandler<ListPatientsForDoctorQuery>
 {
-  constructor(private readonly patientsService: IPatientsService) {}
+  async listPatientsForDoctor(
+    doctorId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Patient[]> {
+    const PK = `${DOCTOR_ID_PREFIX}${doctorId}`;
+    const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
+
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ExpressionAttributeNames: {
+        '#pk': 'PK',
+        '#sk': 'SK',
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      Limit: limit,
+    });
+    const { Items = [] } = await client.send(command);
+
+    return Items.map((p) => {
+      const [firstName, lastName] = p.PatientName.split(' ');
+      return new Patient(p.PatientId, firstName, lastName);
+    });
+  }
 
   async execute({ doctorId, queryParams }: ListPatientsForDoctorQuery) {
     const { lastSeen, limit } = queryParams;
-    return this.patientsService.listPatientsForDoctor(
+
+    const patients = await this.listPatientsForDoctor(
       doctorId,
       limit,
       lastSeen,
     );
+
+    if (patients.length === 0) {
+      throw new NoPatientsFoundForDoctorException(doctorId);
+    }
+
+    return patients;
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [ListPatientsForDoctorController],
-  providers: [
-    ListPatientsForDoctorHandler,
-    { provide: IPatientsService, useClass: PatientsService },
-  ],
+  providers: [ListPatientsForDoctorHandler],
 })
 export class ListPatientsForDoctorModule {}

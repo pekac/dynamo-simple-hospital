@@ -43,8 +43,8 @@ interface CreateResource<T> {
 export abstract class Resource<T extends Record<keyof T, any>>
   implements IResource<T>
 {
-  private readonly client: DynamoDBDocumentClient = client;
-  private readonly tableName: string = DATA_TABLE;
+  protected readonly client: DynamoDBDocumentClient = client;
+  protected readonly tableName: string = DATA_TABLE;
   private entityTemplate: { new (): T };
   private pkPrefix: string;
   skPrefix: string;
@@ -66,7 +66,7 @@ export abstract class Resource<T extends Record<keyof T, any>>
     };
   }
 
-  private mapToEntity(
+  protected mapToEntity(
     record: Record<string, number | string> | undefined = {},
   ): T {
     const keys: string[] = Object.keys(record);
@@ -90,10 +90,11 @@ export abstract class Resource<T extends Record<keyof T, any>>
     parentId,
     decorator = IDENTITY,
   }: CreateItem<T>): Promise<string | undefined> {
+    const createdAt = new Date();
     const pk = parentId || dto.id;
     const sk = dto.id;
     const primaryKey = this.generateItemKey(pk, sk);
-    const item = decorator({ ...primaryKey, ...dto });
+    const item = decorator({ ...primaryKey, ...dto, createdAt });
 
     const command = new PutCommand({
       TableName: this.tableName,

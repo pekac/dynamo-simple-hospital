@@ -6,8 +6,9 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { IPatientsService } from '../patient.interface';
-import { PatientsService } from '../patients.service';
+import { PatientsResource } from 'src/core';
+
+import { PatientNotFoundException } from '../common';
 
 class DeletePatientCommand {
   constructor(public readonly patientId: string) {}
@@ -25,19 +26,21 @@ class DeletePatientController {
 
 @CommandHandler(DeletePatientCommand)
 class DeletePatientHandler implements ICommandHandler<DeletePatientCommand> {
-  constructor(private readonly patientsService: IPatientsService) {}
+  constructor(private readonly patients: PatientsResource) {}
 
   async execute({ patientId }: DeletePatientCommand) {
-    return this.patientsService.remove(patientId);
+    const patient = await this.patients.one(patientId);
+    if (!patient) {
+      throw new PatientNotFoundException(patientId);
+    }
+
+    return this.patients.remove(patientId);
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [DeletePatientController],
-  providers: [
-    DeletePatientHandler,
-    { provide: IPatientsService, useClass: PatientsService },
-  ],
+  providers: [DeletePatientHandler, PatientsResource],
 })
 export class DeletePatientModule {}
