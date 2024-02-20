@@ -6,11 +6,9 @@ import {
   QueryHandler,
 } from '@nestjs/cqrs';
 
-import { ListTestsParamsDto } from '../common/test.dto';
+import { TestsResource } from 'src/core';
 
-import { ITestsService } from '../test.interface';
-
-import { TestsService } from '../tests.service';
+import { ListTestsParamsDto, NoTestsFoundForPatientException } from '../common';
 
 class ListTestsForPatientQuery {
   constructor(
@@ -39,23 +37,30 @@ class ListTestsForPatientController {
 class ListTestsForPatientHandler
   implements IQueryHandler<ListTestsForPatientQuery>
 {
-  constructor(private readonly testsService: ITestsService) {}
+  constructor(private readonly tests: TestsResource) {}
 
   async execute({
     patientId,
     limit = 20,
     lastSeen = '$',
   }: ListTestsForPatientQuery) {
-    return this.testsService.listTestsForPatient(patientId, limit, lastSeen);
+    const tests = await this.tests.listTestsForPatient(
+      patientId,
+      limit,
+      lastSeen,
+    );
+
+    if (tests.length === 0) {
+      throw new NoTestsFoundForPatientException(patientId);
+    }
+
+    return tests;
   }
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [ListTestsForPatientController],
-  providers: [
-    ListTestsForPatientHandler,
-    { provide: ITestsService, useClass: TestsService },
-  ],
+  providers: [ListTestsForPatientHandler, TestsResource],
 })
 export class ListTestsForPatientModule {}

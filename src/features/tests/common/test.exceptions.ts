@@ -17,3 +17,15 @@ export class NoTestsFoundForDoctorException extends NotFoundException {
     super(`No tests found for doctor with ID ${doctorId}`);
   }
 }
+
+export class NoTestsFoundForPatientException extends NotFoundException {
+  constructor(patientId: string) {
+    super(`No tests found for patient with ID ${patientId}`);
+  }
+}
+
+export class NoTestFoundForPatientException extends NotFoundException {
+  constructor(testId: string, patientId: string) {
+    super(`Test with ID ${testId} found for patient with ID ${patientId}`);
+  }
+}

@@ -12,7 +12,7 @@ import { crossPartitionEntityList } from 'src/dynamo';
 
 import { truncateDateToWeek } from 'src/utils';
 
-import { ListPatientsDto } from '../common/patient.dto';
+import { ListPatientsDto } from '../common';
 
 class ListPatientsQuery {
   constructor(public readonly queryParams: ListPatientsDto) {}

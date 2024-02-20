@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Module,
-  NotFoundException,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Module, Param } from '@nestjs/common';
 import {
   CqrsModule,
   IQueryHandler,
@@ -12,11 +6,9 @@ import {
   QueryHandler,
 } from '@nestjs/cqrs';
 
-import { Test } from '../../../core/entities/test.entity';
+import { Test, TestsResource } from 'src/core';
 
-import { ITestsService } from '../test.interface';
-
-import { TestsService } from '../tests.service';
+import { NoTestFoundForPatientException } from '../common';
 
 class GetTestForPatientQuery {
   constructor(
@@ -42,13 +34,13 @@ class GetTestForPatientController {
 class GetTestForPatientHandler
   implements IQueryHandler<GetTestForPatientQuery>
 {
-  constructor(private readonly testsService: ITestsService) {}
+  constructor(private readonly tests: TestsResource) {}
 
   async execute({ patientId, testId }: GetTestForPatientQuery): Promise<Test> {
-    const test = await this.testsService.one(patientId, testId);
+    const test = await this.tests.one(patientId, testId);
 
     if (!test) {
-      throw new NotFoundException(`Test with Id: ${testId} was not found.`);
+      throw new NoTestFoundForPatientException(patientId, testId);
     }
 
     return test;
@@ -58,9 +50,6 @@ class GetTestForPatientHandler
 @Module({
   imports: [CqrsModule],
   controllers: [GetTestForPatientController],
-  providers: [
-    GetTestForPatientHandler,
-    { provide: ITestsService, useClass: TestsService },
-  ],
+  providers: [GetTestForPatientHandler, TestsResource],
 })
 export class GetTestForPatientModule {}

@@ -13,10 +13,13 @@ import {
   CqrsModule,
   ICommandHandler,
 } from '@nestjs/cqrs';
+const KSUID = require('ksuid');
 
-import { TestsResource } from 'src/core';
+import { DOCTOR_ID_PREFIX, TEST_SK_PREFIX, TestsResource } from 'src/core';
 
-import { CreateTestDto, TestAlreadyExistsException } from '../common';
+import { ItemKey } from 'src/dynamo';
+
+import { CreateTestDto } from '../common';
 
 class CreateTestForPatientCommand {
   constructor(
@@ -51,8 +54,24 @@ class CreateTestForPatientHandler
     patientId,
     createTestDto,
   }: CreateTestForPatientCommand): Promise<string | undefined> {
-    return this.tests.create({ dto: createTestDto, parentId: patientId });
+    return this.tests.create({
+      dto: createTestDto,
+      parentId: patientId,
+      decorator: decorateTest,
+    });
   }
+}
+
+function decorateTest(test: CreateTestDto & ItemKey & { createdAt: Date }) {
+  const ksuid = KSUID.randomSync(test.createdAt).string;
+  /* override SK */
+  test.SK = `${TEST_SK_PREFIX}${ksuid}`;
+  return {
+    ...test,
+    /* for fetching by doctor id */
+    GSI1PK: `${DOCTOR_ID_PREFIX}${test.doctorId}`,
+    GSI1SK: test.SK,
+  };
 }
 
 @Module({
