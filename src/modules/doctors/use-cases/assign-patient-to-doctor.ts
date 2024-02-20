@@ -14,7 +14,12 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { Doctor, DoctorPatientsResource, DoctorsResource } from 'src/core';
+import {
+  DOCTOR_ID_PREFIX,
+  Doctor,
+  DoctorPatientsResource,
+  DoctorsResource,
+} from 'src/core';
 
 import { ItemKey } from 'src/dynamo';
 
@@ -57,7 +62,6 @@ class AssignPatientToDoctorHandler
   ) {}
 
   async execute({ doctorId, assignPatientDto }: AssignPatientToDoctorCommand) {
-    /* all of this in a tx */
     const doctor = await this.doctors.one(doctorId);
     if (!doctor) {
       throw new DoctorNotFoundException(doctorId);
@@ -81,20 +85,21 @@ class AssignPatientToDoctorHandler
   }
 }
 
-function generateDecorator(doctor: Doctor & ItemKey) {
-  return function transformDoctorPatient(
+function generateDecorator(doctor: Doctor) {
+  return function decorateDoctorPatient(
     addPatientDto: AssignPatientToDoctorDto & ItemKey,
   ) {
+    const doctorPK = `${DOCTOR_ID_PREFIX}${doctor.id}`;
     return {
       PatientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
       PatientId: addPatientDto.id,
       DoctorName: `${doctor?.firstName} ${doctor?.lastName}`,
       Specialization: doctor?.specialization,
       DoctorId: doctor.id,
-      PK: doctor.PK,
+      PK: doctorPK,
       SK: addPatientDto.PK,
       GSI3PK: addPatientDto.PK,
-      GSI3SK: doctor.PK,
+      GSI3SK: doctorPK,
     };
   };
 }
