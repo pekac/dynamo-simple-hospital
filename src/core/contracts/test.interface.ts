@@ -1,6 +1,6 @@
 import { Test } from '../entities';
 
-export abstract class ITestsService {
+export abstract class ITestsResource {
   abstract create(
     createTestDto: Test,
     patientId: string,
