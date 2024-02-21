@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 /* dynamo */
-import { applyMigrations } from './dynamo/controller';
+import { applyMigrations } from './dynamo/migration-controller';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -13,7 +13,7 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { DoctorsResource } from 'src/core';
+import { IDoctorsResource } from 'src/core';
 
 import { ItemKey } from 'src/dynamo';
 
@@ -36,7 +36,7 @@ class CreateDoctorController {
 
 @CommandHandler(CreateDoctorCommand)
 class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
-  constructor(private readonly doctors: DoctorsResource) {}
+  constructor(private readonly doctors: IDoctorsResource) {}
 
   async execute({ createDoctorDto }: CreateDoctorCommand) {
     const doctor = await this.doctors.one(createDoctorDto.id);
@@ -70,6 +70,6 @@ function decorateDoctor(doctor: CreateDoctorDto & ItemKey) {
 @Module({
   imports: [CqrsModule],
   controllers: [CreateDoctorController],
-  providers: [CreateDoctorHandler, DoctorsResource],
+  providers: [CreateDoctorHandler],
 })
 export class CreateDoctorModule {}
