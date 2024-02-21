@@ -6,7 +6,7 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
 import { createTable } from '../helpers';
 
-import { MIGRATIONS_TABLE } from '../controller';
+import { MIGRATIONS_TABLE } from '../migration-controller';
 
 export async function createMigrationsTable(client: DynamoDBDocumentClient) {
   const options: CreateTableCommandInput = {

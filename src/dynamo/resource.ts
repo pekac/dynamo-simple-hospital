@@ -6,9 +6,11 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { DATA_TABLE, client, objToUpdateExpression } from '.';
+import { decapitalize } from 'src/utils';
 
-import { decapitalize } from '../utils/text';
+import { DATA_TABLE, client } from './client';
+
+import { objToUpdateExpression } from './helpers';
 
 type ID = { id: string };
 export type Key = 'PK' | 'SK';

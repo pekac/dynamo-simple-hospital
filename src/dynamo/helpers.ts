@@ -5,7 +5,7 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
-import { capitalize } from '../utils/';
+import { capitalize } from 'src/utils';
 
 type UpdateExpressionAndValues = {
   UpdateExpression: string;
