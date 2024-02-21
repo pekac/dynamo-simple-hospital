@@ -1,3 +1,3 @@
 export * from './constants';
-export * from './data';
+export * from './contracts';
 export * from './entities';
