@@ -6,7 +6,7 @@ import {
   CqrsModule,
 } from '@nestjs/cqrs';
 
-import { PatientsResource } from 'src/core';
+import { IPatientsResource } from 'src/core';
 
 import { PatientNotFoundException } from '../common';
 
@@ -26,7 +26,7 @@ class GetPatientController {
 
 @QueryHandler(GetPatientQuery)
 class GetPatientHandler implements IQueryHandler<GetPatientQuery> {
-  constructor(private readonly patients: PatientsResource) {}
+  constructor(private readonly patients: IPatientsResource) {}
 
   async execute({ patientId }: GetPatientQuery) {
     const patient = await this.patients.one(patientId);
@@ -41,6 +41,6 @@ class GetPatientHandler implements IQueryHandler<GetPatientQuery> {
 @Module({
   imports: [CqrsModule],
   controllers: [GetPatientController],
-  providers: [GetPatientHandler, PatientsResource],
+  providers: [GetPatientHandler],
 })
 export class GetPatientModule {}

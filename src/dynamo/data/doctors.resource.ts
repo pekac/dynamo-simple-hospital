@@ -19,7 +19,7 @@ export class DoctorsResource
   }
 
   addDoctor(dto: CreateDoctorDto): Promise<string | undefined> {
-    return super.create({
+    return this.create({
       dto,
       decorator: decorateDoctor,
     });

@@ -12,6 +12,27 @@ type UpdateExpressionAndValues = {
   ExpressionAttributeValues: { [key: string]: string };
 };
 
+export function projectionGenerator<T>(template: { new (): T & {} }): {
+  projectionExpression: string;
+  projectionNames: Record<string, string>;
+} {
+  const shape = new template();
+  const keys = Object.keys(shape).map((key) => `#${key}`);
+
+  const projectionNames = keys.reduce(
+    (acc, key) => {
+      acc[key] = capitalize(key.substring(1));
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
+  return {
+    projectionExpression: keys.join(', '),
+    projectionNames,
+  };
+}
+
 export function objToUpdateExpression(obj: {
   [key: string]: any;
 }): UpdateExpressionAndValues {

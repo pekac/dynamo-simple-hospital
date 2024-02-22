@@ -1,64 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { PATIENT_ID_PREFIX, Patient } from 'src/core';
+import {
+  CreatePatientDto,
+  IPatientsResource,
+  PATIENT_ID_PREFIX,
+  Patient,
+} from 'src/core';
 
-import { truncateDateToWeek } from 'src/utils';
+import { capitalize, truncateDateToWeek } from 'src/utils';
 
-import { Resource } from '../resource';
+import { ItemKey, Resource } from '../resource';
 
 @Injectable()
-export class PatientsResource extends Resource<Patient> {
+export class PatientsResource
+  extends Resource<Patient>
+  implements IPatientsResource
+{
   constructor() {
     super({ entityTemplate: Patient, pkPrefix: PATIENT_ID_PREFIX });
   }
 
-  async listByLastName(
-    collection: string = 'A',
-    limit: number = 20,
-    lastSeen: string = 'A',
-  ): Promise<Patient[]> {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: 'GSI1',
-      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
-      ExpressionAttributeNames: {
-        '#pk': 'GSI1PK',
-        '#sk': 'GSI1SK',
-      },
-      ExpressionAttributeValues: {
-        ':pk': `${PATIENT_ID_PREFIX}${collection}`,
-        ':sk': `${PATIENT_ID_PREFIX}${lastSeen}`,
-      },
-      Limit: limit,
+  addPatient(dto: CreatePatientDto): Promise<string | undefined> {
+    return this.create({
+      dto,
+      decorator: decoratePatient,
     });
-
-    const { Items } = await this.client.send(command);
-    return Items?.map((item) => this.mapToEntity(item)) as Patient[];
   }
+}
 
-  async listByCreatedAt(
-    collection: string = truncateDateToWeek(new Date()).toISOString(),
-    limit: number = 20,
-    lastSeen: string = new Date().toISOString(),
-  ): Promise<Patient[]> {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: 'GSI2',
-      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
-      ExpressionAttributeNames: {
-        '#pk': 'GSI2PK',
-        '#sk': 'GSI2SK',
-      },
-      ExpressionAttributeValues: {
-        ':pk': `${PATIENT_ID_PREFIX}${collection}`,
-        ':sk': `${PATIENT_ID_PREFIX}${lastSeen}`,
-      },
-      ScanIndexForward: false,
-      Limit: limit,
-    });
-
-    const { Items } = await this.client.send(command);
-    return Items?.map((item) => this.mapToEntity(item)) as Patient[];
-  }
+function decoratePatient(
+  patient: CreatePatientDto & ItemKey & { createdAt: Date },
+) {
+  const firstLetter = patient.lastName.charAt(0);
+  return {
+    ...patient,
+    CreatedAt: patient.createdAt.toISOString(),
+    /* list by last name */
+    GSI1PK: `${PATIENT_ID_PREFIX}${capitalize(firstLetter)}`,
+    GSI1SK: `${PATIENT_ID_PREFIX}${patient.lastName.toUpperCase()}`,
+    /* list by created at */
+    GSI2PK: `${PATIENT_ID_PREFIX}${truncateDateToWeek(patient.createdAt).toISOString()}`,
+    GSI2SK: `${PATIENT_ID_PREFIX}${patient.createdAt.toISOString()}`,
+    /* for listing doctors */
+    GSI3PK: patient.PK,
+    GSI3SK: patient.SK,
+  };
 }

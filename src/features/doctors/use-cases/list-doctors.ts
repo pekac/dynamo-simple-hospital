@@ -9,7 +9,12 @@ import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 import { Doctor, ListDoctorsDto } from 'src/core';
 
-import { DATA_TABLE, client, crossPartitionEntityList } from 'src/dynamo';
+import {
+  DATA_TABLE,
+  client,
+  crossPartitionEntityList,
+  projectionGenerator,
+} from 'src/dynamo';
 
 import { arraySubset, capitalize } from 'src/utils';
 
@@ -40,22 +45,14 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
     limit: number = 5,
     lastSeen: string = '$',
   ): Promise<Doctor[]> {
-    const doctorSkeleton = new Doctor();
-    const keys = Object.keys(doctorSkeleton).map((key) => `#${key}`);
-
-    const projectionNames = keys.reduce(
-      (acc, key) => {
-        acc[key] = capitalize(key.substring(1));
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
+    const { projectionExpression, projectionNames } =
+      projectionGenerator(Doctor);
 
     const command = new QueryCommand({
       TableName: DATA_TABLE,
       IndexName: 'GSI2',
       KeyConditionExpression: '#pk = :pk AND #sk > :sk',
-      ProjectionExpression: keys.join(', '),
+      ProjectionExpression: projectionExpression,
       ExpressionAttributeNames: {
         '#pk': 'GSI2PK',
         '#sk': 'GSI2SK',

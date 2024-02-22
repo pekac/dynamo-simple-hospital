@@ -7,14 +7,16 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { DOCTOR_ID_PREFIX, PATIENT_ID_PREFIX, Patient } from 'src/core';
+import {
+  DOCTOR_ID_PREFIX,
+  ListPatientsForDoctorDto,
+  PATIENT_ID_PREFIX,
+  Patient,
+} from 'src/core';
 
 import { DATA_TABLE, client } from 'src/dynamo';
 
-import {
-  ListPatientsForDoctorDto,
-  NoPatientsFoundForDoctorException,
-} from '../common';
+import { NoPatientsFoundForDoctorException } from '../common';
 
 class ListPatientsForDoctorQuery {
   constructor(

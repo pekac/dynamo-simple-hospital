@@ -14,9 +14,9 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { PatientsResource } from 'src/core';
+import { UpdatePatientDto, IPatientsResource } from 'src/core';
 
-import { PatientNotFoundException, UpdatePatientDto } from '../common';
+import { PatientNotFoundException } from '../common';
 
 class UpdatePatientCommand {
   constructor(
@@ -43,7 +43,7 @@ class UpdatePatientController {
 
 @CommandHandler(UpdatePatientCommand)
 class UpdatePatientHandler implements ICommandHandler<UpdatePatientCommand> {
-  constructor(private readonly patients: PatientsResource) {}
+  constructor(private readonly patients: IPatientsResource) {}
 
   async execute({ patientId, updatePatientDto }: UpdatePatientCommand) {
     const patient = await this.patients.one(patientId);
@@ -58,6 +58,6 @@ class UpdatePatientHandler implements ICommandHandler<UpdatePatientCommand> {
 @Module({
   imports: [CqrsModule],
   controllers: [UpdatePatientController],
-  providers: [UpdatePatientHandler, PatientsResource],
+  providers: [UpdatePatientHandler],
 })
 export class UpdatePatientModule {}

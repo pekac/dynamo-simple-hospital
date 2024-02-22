@@ -5,14 +5,18 @@ import {
   QueryBus,
   CqrsModule,
 } from '@nestjs/cqrs';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { Patient, PatientsResource } from 'src/core';
+import { ListPatientsDto, PATIENT_ID_PREFIX, Patient } from 'src/core';
 
-import { crossPartitionEntityList } from 'src/dynamo';
+import {
+  DATA_TABLE,
+  client,
+  crossPartitionEntityList,
+  projectionGenerator,
+} from 'src/dynamo';
 
 import { truncateDateToWeek } from 'src/utils';
-
-import { ListPatientsDto } from '../common';
 
 class ListPatientsQuery {
   constructor(public readonly queryParams: ListPatientsDto) {}
@@ -30,7 +34,64 @@ class ListPatientsController {
 
 @QueryHandler(ListPatientsQuery)
 class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
-  constructor(private readonly patients: PatientsResource) {}
+  async listByLastName(
+    collection: string = 'A',
+    limit: number = 20,
+    lastSeen: string = 'A',
+  ): Promise<Patient[]> {
+    const { projectionExpression, projectionNames } =
+      projectionGenerator(Patient);
+
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI1',
+      KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ProjectionExpression: projectionExpression,
+      ExpressionAttributeNames: {
+        '#pk': 'GSI1PK',
+        '#sk': 'GSI1SK',
+        ...projectionNames,
+      },
+      ExpressionAttributeValues: {
+        ':pk': `${PATIENT_ID_PREFIX}${collection}`,
+        ':sk': `${PATIENT_ID_PREFIX}${lastSeen}`,
+      },
+      Limit: limit,
+    });
+
+    const { Items = [] } = await client.send(command);
+    return Items as Patient[];
+  }
+
+  async listByCreatedAt(
+    collection: string = truncateDateToWeek(new Date()).toISOString(),
+    limit: number = 20,
+    lastSeen: string = new Date().toISOString(),
+  ): Promise<Patient[]> {
+    const { projectionExpression, projectionNames } =
+      projectionGenerator(Patient);
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI2',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ProjectionExpression: projectionExpression,
+      ExpressionAttributeNames: {
+        '#pk': 'GSI2PK',
+        '#sk': 'GSI2SK',
+        ...projectionNames,
+      },
+      ExpressionAttributeValues: {
+        ':pk': `${PATIENT_ID_PREFIX}${collection}`,
+        ':sk': `${PATIENT_ID_PREFIX}${lastSeen}`,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
+
+    const { Items = [] } = await client.send(command);
+    return Items as Patient[];
+  }
+
   async getPatientsByCreatedAt({
     lastSeen = '$',
     limit,
@@ -43,7 +104,7 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
     const shouldContinue = (col: string) => col >= lastCollection;
 
     const getItems = (col: string, limit: number) =>
-      this.patients.listByCreatedAt(col, limit, lastSeen);
+      this.listByCreatedAt(col, limit, lastSeen);
 
     const updateCollection = (
       col: string,
@@ -78,7 +139,7 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
       col.charCodeAt(0) <= lastCollection.charCodeAt(0);
 
     const getItems = (col: string, limit: number, lastSeen = '$') =>
-      this.patients.listByLastName(col, limit, lastSeen.toUpperCase());
+      this.listByLastName(col, limit, lastSeen.toUpperCase());
 
     const updateCollection = (
       col: string,
@@ -109,6 +170,6 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
 @Module({
   imports: [CqrsModule],
   controllers: [ListPatientsController],
-  providers: [ListPatientsHandler, PatientsResource],
+  providers: [ListPatientsHandler],
 })
 export class ListPatientsModule {}

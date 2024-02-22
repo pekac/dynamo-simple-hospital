@@ -13,13 +13,9 @@ import {
   ICommandHandler,
 } from '@nestjs/cqrs';
 
-import { PATIENT_ID_PREFIX, PatientsResource } from 'src/core';
+import { CreatePatientDto, IPatientsResource } from 'src/core';
 
-import { ItemKey } from 'src/dynamo';
-
-import { capitalize, truncateDateToWeek } from 'src/utils';
-
-import { CreatePatientDto, PatientAlreadyExistsException } from '../common';
+import { PatientAlreadyExistsException } from '../common';
 
 class CreatePatientCommand {
   constructor(public readonly createPatientDto: CreatePatientDto) {}
@@ -38,7 +34,7 @@ class CreatePatientController {
 
 @CommandHandler(CreatePatientCommand)
 class CreatePatientHandler implements ICommandHandler<CreatePatientCommand> {
-  constructor(private readonly patients: PatientsResource) {}
+  constructor(private readonly patients: IPatientsResource) {}
 
   async execute({ createPatientDto }: CreatePatientCommand) {
     const patient = await this.patients.one(createPatientDto.id);
@@ -46,35 +42,13 @@ class CreatePatientHandler implements ICommandHandler<CreatePatientCommand> {
       throw new PatientAlreadyExistsException(createPatientDto.id);
     }
 
-    return this.patients.create({
-      dto: createPatientDto,
-      decorator: decoratePatient,
-    });
+    return this.patients.addPatient(createPatientDto);
   }
-}
-
-function decoratePatient(
-  patient: CreatePatientDto & ItemKey & { createdAt: Date },
-) {
-  const firstLetter = patient.lastName.charAt(0);
-  return {
-    ...patient,
-    CreatedAt: patient.createdAt.toISOString(),
-    /* list by last name */
-    GSI1PK: `${PATIENT_ID_PREFIX}${capitalize(firstLetter)}`,
-    GSI1SK: `${PATIENT_ID_PREFIX}${patient.lastName.toUpperCase()}`,
-    /* list by created at */
-    GSI2PK: `${PATIENT_ID_PREFIX}${truncateDateToWeek(patient.createdAt).toISOString()}`,
-    GSI2SK: `${PATIENT_ID_PREFIX}${patient.createdAt.toISOString()}`,
-    /* for listing doctors */
-    GSI3PK: patient.PK,
-    GSI3SK: patient.SK,
-  };
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [CreatePatientController],
-  providers: [CreatePatientHandler, PatientsResource],
+  providers: [CreatePatientHandler],
 })
 export class CreatePatientModule {}
