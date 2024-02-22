@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 
-import { IDoctorsResource, IPatientsResource, ITestsResource } from 'src/core';
+import {
+  IDoctorPatientsResource,
+  IDoctorsResource,
+  IPatientsResource,
+  ITestsResource,
+} from 'src/core';
 
 import {
   DoctorPatientsResource,
@@ -14,6 +19,10 @@ import {
     {
       provide: IDoctorsResource,
       useClass: DoctorsResource,
+    },
+    {
+      provide: IDoctorPatientsResource,
+      useClass: DoctorPatientsResource,
     },
     {
       provide: IPatientsResource,

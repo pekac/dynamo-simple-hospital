@@ -3,9 +3,9 @@ import { CreateDoctorDto } from '../dto';
 import { Doctor } from '../entities';
 
 export abstract class IDoctorsResource {
-  abstract create(
+  abstract addDoctor(
     createDoctorDto: CreateDoctorDto,
-  ): Promise<Doctor | undefined>;
+  ): Promise<string | undefined>;
   abstract one(doctorId: string): Promise<Doctor | undefined>;
   abstract update(
     doctorId: string,
@@ -17,14 +17,6 @@ export abstract class IDoctorsResource {
   //   limit: number,
   //   lastSeen: string,
   // ): Promise<Doctor[]>;
-  // abstract addPatient(
-  //   doctorId: string,
-  //   addPatientDto: Partial<AssignPatientToDoctorDto>,
-  // ): Promise<any>;
-  // abstract removePatientFromDoctor(
-  //   doctorId: string,
-  //   patientId: string,
-  // ): Promise<any>;
   // abstract listDoctorsForPatient(
   //   patientId: string,
   //   limit?: number,

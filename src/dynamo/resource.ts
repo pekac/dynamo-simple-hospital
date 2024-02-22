@@ -24,14 +24,14 @@ export function IDENTITY<T>(value: T): T {
   return value;
 }
 
-export interface CreateItem<T> {
+interface CreateItem<T> {
   dto: DTO;
   parentId?: string;
   decorator?: (obj: any) => any;
 }
 
 export interface IResource<T> {
-  create(createItem: CreateItem<T> | DTO): Promise<string | undefined>;
+  create(createItem: CreateItem<T>): Promise<string | undefined>;
   one(pk: string, sk: string): Promise<T | undefined>;
   update(pk: string, sk: string, updateDto: Partial<T>): Promise<T>;
   remove(pk: string, sk: string): Promise<string>;
@@ -41,12 +41,6 @@ interface CreateResource<T> {
   entityTemplate: { new (): T };
   pkPrefix: string;
   skPrefix?: string;
-}
-
-export function isCreateItem<T>(
-  arg: CreateItem<T> | DTO,
-): arg is CreateItem<T> {
-  return (arg as CreateItem<T>).dto !== undefined;
 }
 
 export abstract class Resource<T extends Record<keyof T, any>>
@@ -94,21 +88,11 @@ export abstract class Resource<T extends Record<keyof T, any>>
     }, entity);
   }
 
-  create({
+  async create({
+    decorator = IDENTITY,
     dto,
     parentId,
-    decorator,
-  }: CreateItem<T>): Promise<string | undefined>;
-  create(dto: DTO): Promise<string | undefined>;
-
-  async create(createParams: CreateItem<T> | DTO): Promise<string | undefined> {
-    if (!isCreateItem(createParams)) {
-      /* will only be called as createParams */
-      /* need the overloaded method for child classes */
-      return undefined;
-    }
-
-    const { decorator = IDENTITY, dto, parentId } = createParams;
+  }: CreateItem<T>): Promise<string | undefined> {
     const createdAt = new Date();
     const pk = parentId || dto.id;
     const sk = dto.id;

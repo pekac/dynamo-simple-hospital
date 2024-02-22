@@ -1,22 +1,24 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateDoctorDto, DOCTOR_ID_PREFIX, Doctor } from 'src/core';
+import {
+  CreateDoctorDto,
+  DOCTOR_ID_PREFIX,
+  Doctor,
+  IDoctorsResource,
+} from 'src/core';
 
-import { CreateItem, ItemKey, Resource, isCreateItem } from '../resource';
+import { ItemKey, Resource } from '../resource';
 
 @Injectable()
-export class DoctorsResource extends Resource<Doctor> {
+export class DoctorsResource
+  extends Resource<Doctor>
+  implements IDoctorsResource
+{
   constructor() {
     super({ entityTemplate: Doctor, pkPrefix: DOCTOR_ID_PREFIX });
   }
 
-  create(
-    dto: CreateDoctorDto | CreateItem<Doctor>,
-  ): Promise<string | undefined> {
-    if (isCreateItem(dto)) {
-      throw new TypeError(`Dto is not of shape CreateDoctorDto`);
-    }
-
+  addDoctor(dto: CreateDoctorDto): Promise<string | undefined> {
     return super.create({
       dto,
       decorator: decorateDoctor,
