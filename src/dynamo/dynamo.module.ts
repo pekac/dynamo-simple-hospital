@@ -4,6 +4,7 @@ import {
   IDoctorPatientsResource,
   IDoctorsResource,
   IPatientsResource,
+  ISpecializationResource,
   ITestsResource,
 } from 'src/core';
 
@@ -11,6 +12,7 @@ import {
   DoctorPatientsResource,
   DoctorsResource,
   PatientsResource,
+  SpecializationResource,
   TestsResource,
 } from './data';
 
@@ -27,6 +29,10 @@ import {
     {
       provide: IPatientsResource,
       useClass: PatientsResource,
+    },
+    {
+      provide: ISpecializationResource,
+      useClass: SpecializationResource,
     },
     {
       provide: ITestsResource,

@@ -12,11 +12,8 @@ import {
   CqrsModule,
   ICommandHandler,
 } from '@nestjs/cqrs';
-import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
-import { CreateSpecializationDto, SPECIALIZATION_KEY } from 'src/core';
-
-import { DATA_TABLE, client } from 'src/dynamo';
+import { CreateSpecializationDto, ISpecializationResource } from 'src/core';
 
 class CreateSpecializationCommand {
   constructor(public readonly specialization: string) {}
@@ -39,22 +36,10 @@ class CreateSpecializationController {
 class CreateSpecializationHandler
   implements ICommandHandler<CreateSpecializationCommand>
 {
-  async execute({ specialization }: CreateSpecializationCommand) {
-    const command = new UpdateCommand({
-      TableName: DATA_TABLE,
-      Key: SPECIALIZATION_KEY,
-      UpdateExpression: 'ADD #specialization :specialization',
-      ExpressionAttributeNames: {
-        '#specialization': 'Specializations',
-      },
-      ExpressionAttributeValues: {
-        ':specialization': new Set([specialization.toUpperCase()]),
-      },
-      ReturnValues: 'ALL_NEW',
-    });
+  constructor(private readonly specializations: ISpecializationResource) {}
 
-    await client.send(command);
-    return specialization;
+  async execute({ specialization }: CreateSpecializationCommand) {
+    return this.specializations.create(specialization);
   }
 }
 

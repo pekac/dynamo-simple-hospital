@@ -41,7 +41,7 @@ class CreateDoctorHandler implements ICommandHandler<CreateDoctorCommand> {
     if (doctor) {
       throw new DoctorAlreadyExistsException(createDoctorDto.id);
     }
-    return this.doctors.create(createDoctorDto);
+    return this.doctors.addDoctor(createDoctorDto);
   }
 }
 
