@@ -13,13 +13,8 @@ import {
   CqrsModule,
   ICommandHandler,
 } from '@nestjs/cqrs';
-const KSUID = require('ksuid');
 
-import { DOCTOR_ID_PREFIX, TEST_SK_PREFIX, TestsResource } from 'src/core';
-
-import { ItemKey } from 'src/dynamo';
-
-import { CreateTestDto } from '../common';
+import { CreateTestDto, ITestsResource } from 'src/core';
 
 class CreateTestForPatientCommand {
   constructor(
@@ -48,35 +43,19 @@ class CreateTestForPatientController {
 class CreateTestForPatientHandler
   implements ICommandHandler<CreateTestForPatientCommand>
 {
-  constructor(private readonly tests: TestsResource) {}
+  constructor(private readonly tests: ITestsResource) {}
 
   async execute({
     patientId,
     createTestDto,
   }: CreateTestForPatientCommand): Promise<string | undefined> {
-    return this.tests.create({
-      dto: createTestDto,
-      parentId: patientId,
-      decorator: decorateTest,
-    });
+    return this.tests.addTest(createTestDto, patientId);
   }
-}
-
-function decorateTest(test: CreateTestDto & ItemKey & { createdAt: Date }) {
-  const ksuid = KSUID.randomSync(test.createdAt).string;
-  /* override SK */
-  test.SK = `${TEST_SK_PREFIX}${ksuid}`;
-  return {
-    ...test,
-    /* for fetching by doctor id */
-    GSI1PK: `${DOCTOR_ID_PREFIX}${test.doctorId}`,
-    GSI1SK: test.SK,
-  };
 }
 
 @Module({
   imports: [CqrsModule],
   controllers: [CreateTestForPatientController],
-  providers: [CreateTestForPatientHandler, TestsResource],
+  providers: [CreateTestForPatientHandler],
 })
 export class CreateTestForPatientModule {}

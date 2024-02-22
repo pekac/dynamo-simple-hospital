@@ -5,8 +5,11 @@ import {
   QueryBus,
   QueryHandler,
 } from '@nestjs/cqrs';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { TestsResource } from 'src/core';
+import { TEST_PK_PREFIX, TEST_SK_PREFIX, Test } from 'src/core';
+
+import { DATA_TABLE, client, projectionGenerator } from 'src/dynamo';
 
 import { ListTestsParamsDto, NoTestsFoundForPatientException } from '../common';
 
@@ -37,18 +40,42 @@ class ListTestsForPatientController {
 class ListTestsForPatientHandler
   implements IQueryHandler<ListTestsForPatientQuery>
 {
-  constructor(private readonly tests: TestsResource) {}
+  async listTestsForPatient(
+    patientId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Test[]> {
+    const PK = `${TEST_PK_PREFIX}${patientId}`;
+    const SK = lastSeen === '$' ? PK : `${TEST_SK_PREFIX}${lastSeen}`;
+    const { projectionExpression, projectionNames } = projectionGenerator(Test);
+
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ProjectionExpression: projectionExpression,
+      ExpressionAttributeNames: {
+        '#pk': 'PK',
+        '#sk': 'SK',
+        ...projectionNames,
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
+
+    const { Items = [] } = await client.send(command);
+    return Items as Test[];
+  }
 
   async execute({
     patientId,
     limit = 20,
     lastSeen = '$',
   }: ListTestsForPatientQuery) {
-    const tests = await this.tests.listTestsForPatient(
-      patientId,
-      limit,
-      lastSeen,
-    );
+    const tests = await this.listTestsForPatient(patientId, limit, lastSeen);
 
     if (tests.length === 0) {
       throw new NoTestsFoundForPatientException(patientId);
@@ -61,6 +88,6 @@ class ListTestsForPatientHandler
 @Module({
   imports: [CqrsModule],
   controllers: [ListTestsForPatientController],
-  providers: [ListTestsForPatientHandler, TestsResource],
+  providers: [ListTestsForPatientHandler],
 })
 export class ListTestsForPatientModule {}

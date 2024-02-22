@@ -1,5 +1,5 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsNumber } from 'class-validator';
 
 export class CreatePatientDto {
   @IsString()
@@ -22,26 +22,3 @@ export class UpdatePatientDto extends PartialType(
 export class AddPatientToDoctorDto extends PartialType(
   OmitType(CreatePatientDto, ['age'] as const),
 ) {}
-
-type sortBy = 'lastName' | 'createdAt';
-
-export class ListPatientsDto {
-  @IsString()
-  readonly sortBy: sortBy;
-
-  @IsString()
-  readonly lastSeen: string;
-
-  @IsInt()
-  readonly limit: number;
-}
-
-export class ListPatientsForDoctorDto {
-  @IsOptional()
-  @IsString()
-  readonly lastSeen?: string;
-
-  @IsOptional()
-  @IsString()
-  readonly limit?: number;
-}

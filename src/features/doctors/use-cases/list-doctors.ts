@@ -7,7 +7,7 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { Doctor, ListDoctorsDto } from 'src/core';
+import { Doctor } from 'src/core';
 
 import {
   DATA_TABLE,
@@ -16,10 +16,11 @@ import {
   projectionGenerator,
 } from 'src/dynamo';
 
-import { arraySubset, capitalize } from 'src/utils';
+import { arraySubset } from 'src/utils';
 
 import {
   getSpecializationsQuery,
+  ListDoctorsDto,
   NoDoctorsFoundException,
   NoSpecializationsFoundException,
 } from '../common';

@@ -6,7 +6,7 @@ import {
   QueryHandler,
 } from '@nestjs/cqrs';
 
-import { Test, TestsResource } from 'src/core';
+import { Test, ITestsResource } from 'src/core';
 
 import { NoTestFoundForPatientException } from '../common';
 
@@ -34,7 +34,7 @@ class GetTestForPatientController {
 class GetTestForPatientHandler
   implements IQueryHandler<GetTestForPatientQuery>
 {
-  constructor(private readonly tests: TestsResource) {}
+  constructor(private readonly tests: ITestsResource) {}
 
   async execute({ patientId, testId }: GetTestForPatientQuery): Promise<Test> {
     const test = await this.tests.one(patientId, testId);
@@ -50,6 +50,6 @@ class GetTestForPatientHandler
 @Module({
   imports: [CqrsModule],
   controllers: [GetTestForPatientController],
-  providers: [GetTestForPatientHandler, TestsResource],
+  providers: [GetTestForPatientHandler],
 })
 export class GetTestForPatientModule {}

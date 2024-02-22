@@ -7,16 +7,14 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
+import { DOCTOR_ID_PREFIX, PATIENT_ID_PREFIX, Patient } from 'src/core';
+
+import { DATA_TABLE, client, projectionGenerator } from 'src/dynamo';
+
 import {
-  DOCTOR_ID_PREFIX,
   ListPatientsForDoctorDto,
-  PATIENT_ID_PREFIX,
-  Patient,
-} from 'src/core';
-
-import { DATA_TABLE, client } from 'src/dynamo';
-
-import { NoPatientsFoundForDoctorException } from '../common';
+  NoPatientsFoundForDoctorException,
+} from '../common';
 
 class ListPatientsForDoctorQuery {
   constructor(
@@ -52,12 +50,17 @@ class ListPatientsForDoctorHandler
     const PK = `${DOCTOR_ID_PREFIX}${doctorId}`;
     const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
 
+    const { projectionExpression, projectionNames } =
+      projectionGenerator(Patient);
+
     const command = new QueryCommand({
       TableName: DATA_TABLE,
       KeyConditionExpression: '#pk = :pk AND #sk > :sk',
+      ProjectionExpression: projectionExpression,
       ExpressionAttributeNames: {
         '#pk': 'PK',
         '#sk': 'SK',
+        ...projectionNames,
       },
       ExpressionAttributeValues: {
         ':pk': PK,
@@ -66,11 +69,7 @@ class ListPatientsForDoctorHandler
       Limit: limit,
     });
     const { Items = [] } = await client.send(command);
-
-    return Items.map((p) => {
-      const [firstName, lastName] = p.PatientName.split(' ');
-      return new Patient(p.PatientId, firstName, lastName);
-    });
+    return Items as Patient[];
   }
 
   async execute({ doctorId, queryParams }: ListPatientsForDoctorQuery) {

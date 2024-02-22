@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+const KSUID = require('ksuid');
 
 import {
+  CreateTestDto,
   DOCTOR_ID_PREFIX,
+  ITestsResource,
   TEST_PK_PREFIX,
   TEST_SK_PREFIX,
   Test,
 } from 'src/core';
 
-import { Resource } from '../resource';
+import { ItemKey, Resource } from '../resource';
 
 @Injectable()
-export class TestsResource extends Resource<Test> {
+export class TestsResource extends Resource<Test> implements ITestsResource {
   constructor() {
     super({
       entityTemplate: Test,
@@ -20,56 +22,23 @@ export class TestsResource extends Resource<Test> {
     });
   }
 
-  async listTestsForDoctor(
-    doctorId: string,
-    limit: number = 20,
-    lastSeen: string = '$',
-  ): Promise<Test[]> {
-    const PK = `${DOCTOR_ID_PREFIX}${doctorId}`;
-    const SK = lastSeen === '$' ? PK : `${TEST_SK_PREFIX}${lastSeen}`;
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: 'GSI1',
-      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
-      ExpressionAttributeNames: {
-        '#pk': 'PK',
-        '#sk': 'SK',
-      },
-      ExpressionAttributeValues: {
-        ':pk': PK,
-        ':sk': SK,
-      },
-      ScanIndexForward: false,
-      Limit: limit,
+  addTest(dto: CreateTestDto, patientId: string): Promise<string | undefined> {
+    return this.create({
+      dto,
+      parentId: patientId,
+      decorator: decorateTest,
     });
-
-    const { Items } = await this.client.send(command);
-    return Items as Test[];
   }
+}
 
-  async listTestsForPatient(
-    patientId: string,
-    limit: number = 20,
-    lastSeen: string = '$',
-  ): Promise<Test[]> {
-    const PK = `${TEST_PK_PREFIX}${patientId}`;
-    const SK = lastSeen === '$' ? PK : `${TEST_SK_PREFIX}${lastSeen}`;
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
-      ExpressionAttributeNames: {
-        '#pk': 'PK',
-        '#sk': 'SK',
-      },
-      ExpressionAttributeValues: {
-        ':pk': PK,
-        ':sk': SK,
-      },
-      ScanIndexForward: false,
-      Limit: limit,
-    });
-
-    const { Items } = await this.client.send(command);
-    return Items as Test[];
-  }
+function decorateTest(test: CreateTestDto & ItemKey & { createdAt: Date }) {
+  const ksuid = KSUID.randomSync(test.createdAt).string;
+  /* override SK */
+  test.SK = `${TEST_SK_PREFIX}${ksuid}`;
+  return {
+    ...test,
+    /* for fetching by doctor id */
+    GSI1PK: `${DOCTOR_ID_PREFIX}${test.doctorId}`,
+    GSI1SK: test.SK,
+  };
 }

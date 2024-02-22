@@ -5,8 +5,11 @@ import {
   QueryBus,
   QueryHandler,
 } from '@nestjs/cqrs';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { Test, TestsResource } from 'src/core';
+import { DOCTOR_ID_PREFIX, TEST_SK_PREFIX, Test } from 'src/core';
+
+import { DATA_TABLE, client, projectionGenerator } from 'src/dynamo';
 
 import { ListTestsParamsDto, NoTestsFoundForDoctorException } from '../common';
 
@@ -37,18 +40,43 @@ class ListTestsForDoctorController {
 class ListTestsForDoctorHandler
   implements IQueryHandler<ListTestsForDoctorQuery>
 {
-  constructor(private readonly tests: TestsResource) {}
+  async listTestsForDoctor(
+    doctorId: string,
+    limit: number = 20,
+    lastSeen: string = '$',
+  ): Promise<Test[]> {
+    const { projectionExpression, projectionNames } = projectionGenerator(Test);
+
+    const PK = `${DOCTOR_ID_PREFIX}${doctorId}`;
+    const SK = lastSeen === '$' ? PK : `${TEST_SK_PREFIX}${lastSeen}`;
+    const command = new QueryCommand({
+      TableName: DATA_TABLE,
+      IndexName: 'GSI1',
+      KeyConditionExpression: '#pk = :pk AND #sk < :sk',
+      ProjectionExpression: projectionExpression,
+      ExpressionAttributeNames: {
+        '#pk': 'PK',
+        '#sk': 'SK',
+        ...projectionNames,
+      },
+      ExpressionAttributeValues: {
+        ':pk': PK,
+        ':sk': SK,
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    });
+
+    const { Items = [] } = await client.send(command);
+    return Items as Test[];
+  }
 
   async execute({
     doctorId,
     limit = 20,
     lastSeen = '$',
   }: ListTestsForDoctorQuery): Promise<Test[]> {
-    const tests = await this.tests.listTestsForDoctor(
-      doctorId,
-      limit,
-      lastSeen,
-    );
+    const tests = await this.listTestsForDoctor(doctorId, limit, lastSeen);
 
     if (tests.length === 0) {
       throw new NoTestsFoundForDoctorException(doctorId);

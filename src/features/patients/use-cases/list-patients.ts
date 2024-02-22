@@ -7,7 +7,7 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { ListPatientsDto, PATIENT_ID_PREFIX, Patient } from 'src/core';
+import { PATIENT_ID_PREFIX, Patient } from 'src/core';
 
 import {
   DATA_TABLE,
@@ -17,6 +17,8 @@ import {
 } from 'src/dynamo';
 
 import { truncateDateToWeek } from 'src/utils';
+
+import { ListPatientsDto } from '../common';
 
 class ListPatientsQuery {
   constructor(public readonly queryParams: ListPatientsDto) {}
