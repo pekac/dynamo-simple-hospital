@@ -14,11 +14,9 @@ import {
 } from '@nestjs/cqrs';
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
-import { SPECIALIZATION_KEY } from 'src/core';
+import { CreateSpecializationDto, SPECIALIZATION_KEY } from 'src/core';
 
 import { DATA_TABLE, client } from 'src/dynamo';
-
-import { CreateSpecializationDto } from '../common';
 
 class CreateSpecializationCommand {
   constructor(public readonly specialization: string) {}
