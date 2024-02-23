@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 
 import {
   IDoctorPatientsResource,
@@ -16,6 +16,7 @@ import {
   TestsResource,
 } from './data';
 
+@Global()
 @Module({
   providers: [
     {
@@ -38,6 +39,13 @@ import {
       provide: ITestsResource,
       useClass: TestsResource,
     },
+  ],
+  exports: [
+    IDoctorsResource,
+    IDoctorPatientsResource,
+    IPatientsResource,
+    ISpecializationResource,
+    ITestsResource,
   ],
 })
 export class DynamoModule {}

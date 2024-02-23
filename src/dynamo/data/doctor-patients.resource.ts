@@ -46,11 +46,11 @@ function generateDecorator(doctor: Doctor) {
   ) {
     const doctorPK = `${DOCTOR_ID_PREFIX}${doctor.id}`;
     return {
-      PatientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
-      PatientId: addPatientDto.id,
-      DoctorName: `${doctor?.firstName} ${doctor?.lastName}`,
-      Specialization: doctor?.specialization,
-      DoctorId: doctor.id,
+      patientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
+      patientId: addPatientDto.id,
+      doctorName: `${doctor?.firstName} ${doctor?.lastName}`,
+      specialization: doctor?.specialization,
+      doctorId: doctor.id,
       PK: doctorPK,
       SK: addPatientDto.PK,
       GSI3PK: addPatientDto.PK,

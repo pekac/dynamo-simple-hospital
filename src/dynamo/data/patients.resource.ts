@@ -34,7 +34,7 @@ function decoratePatient(
   const firstLetter = patient.lastName.charAt(0);
   return {
     ...patient,
-    CreatedAt: patient.createdAt.toISOString(),
+    createdAt: patient.createdAt.toISOString(),
     /* list by last name */
     GSI1PK: `${PATIENT_ID_PREFIX}${capitalize(firstLetter)}`,
     GSI1SK: `${PATIENT_ID_PREFIX}${patient.lastName.toUpperCase()}`,

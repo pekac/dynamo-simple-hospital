@@ -6,11 +6,9 @@ import {
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { decapitalize } from 'src/utils';
-
 import { DATA_TABLE, client } from './client';
 
-import { objToUpdateExpression } from './helpers';
+import { objToUpdateExpression, projectionGenerator } from './helpers';
 
 export type ID = { id: string };
 export type Key = 'PK' | 'SK';
@@ -33,7 +31,7 @@ interface CreateItem<T> {
 export interface IResource<T> {
   create(createItem: CreateItem<T>): Promise<string | undefined>;
   one(pk: string, sk: string): Promise<T | undefined>;
-  update(pk: string, sk: string, updateDto: Partial<T>): Promise<T>;
+  update(pk: string, sk: string, updateDto: Partial<T>): Promise<any>;
   remove(pk: string, sk: string): Promise<string>;
 }
 
@@ -69,25 +67,6 @@ export abstract class Resource<T extends Record<keyof T, any>>
     };
   }
 
-  protected mapToEntity(
-    record: Record<string, number | string> | undefined = {},
-  ): T {
-    const keys: string[] = Object.keys(record);
-    const entity: T = new this.entityTemplate();
-    const keyNames: string[] = Object.keys(entity);
-
-    return keys.reduce((entity, key) => {
-      const transformedKey = decapitalize(key);
-      if (keyNames.includes(transformedKey)) {
-        entity = {
-          ...entity,
-          [transformedKey]: record[key],
-        };
-      }
-      return entity;
-    }, entity);
-  }
-
   async create({
     decorator = IDENTITY,
     dto,
@@ -108,10 +87,15 @@ export abstract class Resource<T extends Record<keyof T, any>>
   }
 
   async one(...args: [string, string?]): Promise<T | undefined> {
+    const { projectionExpression, projectionNames } = projectionGenerator(
+      this.entityTemplate,
+    );
     const key = this.generateItemKey(...args);
     const command = new GetCommand({
       TableName: this.tableName,
       Key: key,
+      ProjectionExpression: projectionExpression,
+      ExpressionAttributeNames: projectionNames,
     });
     const { Item } = await this.client.send(command);
 
@@ -119,12 +103,12 @@ export abstract class Resource<T extends Record<keyof T, any>>
       return undefined;
     }
 
-    return this.mapToEntity(Item);
+    return Item as T;
   }
 
   async update(
     ...args: [string, Partial<T>] | [string, string, Partial<T>]
-  ): Promise<T> {
+  ): Promise<any> {
     /* not nice, mini hack for 2nd optional param */
     const [pk, sk, updateDto] = [
       args[0],
@@ -137,10 +121,8 @@ export abstract class Resource<T extends Record<keyof T, any>>
       TableName: this.tableName,
       Key: key,
       ...updateExpressionAndValues,
-      ReturnValues: 'ALL_NEW',
     });
-    const result = await this.client.send(command);
-    return this.mapToEntity(result.Attributes) as T;
+    return this.client.send(command);
   }
 
   async remove(...args: [string, string?]): Promise<any> {

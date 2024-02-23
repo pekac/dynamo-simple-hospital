@@ -26,15 +26,18 @@ export class DoctorsResource
   }
 }
 
-function decorateDoctor(doctor: CreateDoctorDto & ItemKey) {
+function decorateDoctor(
+  doctor: CreateDoctorDto & ItemKey & { createdAt: Date },
+) {
   const specialization = doctor.specialization.toUpperCase();
   return {
     ...doctor,
+    specialization,
+    createdAt: doctor.createdAt.toISOString(),
     /* for fetching tests */
     GSI1PK: doctor.PK,
     GSI1SK: doctor.SK,
     /* for listing by specialization */
-    specialization,
     GSI2PK: `SPECIALIZATION#${specialization}`,
     GSI2SK: `${specialization}#${doctor.id}`,
     /* for listing patients */

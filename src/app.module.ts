@@ -5,6 +5,6 @@ import { DynamoModule } from './dynamo';
 import { DoctorsModule, PatientsModule, TestsModule } from './features';
 
 @Module({
-  imports: [DoctorsModule, PatientsModule, TestsModule, DynamoModule],
+  imports: [DoctorsModule, DynamoModule, PatientsModule, TestsModule],
 })
 export class AppModule {}

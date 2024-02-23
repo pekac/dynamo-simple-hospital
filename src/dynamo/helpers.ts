@@ -5,8 +5,6 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
-import { capitalize } from 'src/utils';
-
 type UpdateExpressionAndValues = {
   UpdateExpression: string;
   ExpressionAttributeValues: { [key: string]: string };
@@ -20,11 +18,11 @@ export function projectionGenerator<T>(template: { new (): T & {} }): {
   const keys = Object.keys(shape).map((key) => `#${key}`);
 
   const projectionNames = keys.reduce(
-    (acc, key) => {
-      acc[key] = capitalize(key.substring(1));
+    (acc: Record<string, string>, key: string) => {
+      acc[key] = key;
       return acc;
     },
-    {} as Record<string, string>,
+    {},
   );
 
   return {
@@ -40,7 +38,7 @@ export function objToUpdateExpression(obj: {
   const expressionAttributeValues: { [key: string]: string } = {};
   for (const key in obj) {
     const bind = `:${key.toLowerCase()}`;
-    const expression = `set ${capitalize(key)} = ${bind}`;
+    const expression = `set ${key} = ${bind}`;
     expressionAttributeValues[bind] = obj[key];
     updateExpression.push(expression);
   }
