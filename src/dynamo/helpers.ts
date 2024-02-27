@@ -17,9 +17,10 @@ export function projectionGenerator<T>(template: { new (): T & {} }): {
   const shape = new template();
   const keys = Object.keys(shape).map((key) => `#${key}`);
 
-  const projectionNames = keys.reduce(
-    (acc: Record<string, string>, key: string) => {
-      acc[key] = key;
+  const projectionNames = Object.keys(shape).reduce(
+    (acc: Record<string, string>, key: string, i: number) => {
+      const transformedKey = keys[i];
+      acc[transformedKey] = key;
       return acc;
     },
     {},
