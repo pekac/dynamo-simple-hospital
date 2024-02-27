@@ -76,14 +76,17 @@ interface ICrossPartitionEntityList<T> {
   limit: number;
   getItems: (c: string, limit: number, lastSeen?: string) => Promise<T[]>;
   shouldContinue: (c: string) => boolean;
-  updateCollection: (c: string) => { collection: string; lastSeen?: string };
+  updateCollection: (
+    c: string,
+    lastSeenItem: T | string | undefined,
+  ) => { collection: string; lastSeen: string };
 }
 
 type Identity = { id: string };
 
 export async function crossPartitionEntityList<T extends Identity>({
   collection,
-  lastSeen,
+  lastSeen = '$',
   limit: totalLimit,
   getItems,
   shouldContinue,
@@ -100,10 +103,10 @@ export async function crossPartitionEntityList<T extends Identity>({
       entityList.push(item);
     }
 
-    lastSeen = entityList[entityList.length - 1]?.id || lastSeen;
+    const lastSeenItem = entityList[entityList.length - 1];
 
     if (items.length < totalLimit) {
-      ({ collection, lastSeen } = updateCollection(collection));
+      ({ collection, lastSeen } = updateCollection(collection, lastSeenItem));
     }
   }
 
