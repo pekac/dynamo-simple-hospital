@@ -109,19 +109,21 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
       col: string,
       lastSeenPatient: Patient & { createdAt: string },
     ): { collection: string; lastSeen: string } => {
-      const sevenDaysAgo = new Date();
+      const sevenDaysAgo = new Date(col);
       sevenDaysAgo.setDate(new Date(col).getDate() - 7);
       return {
         collection: truncateDateToWeek(sevenDaysAgo).toISOString(),
-        lastSeen: lastSeenPatient.createdAt,
+        lastSeen: lastSeenPatient?.createdAt || '$',
       };
     };
 
+    const collection =
+      lastSeen === '$'
+        ? firstCollection
+        : truncateDateToWeek(new Date(lastSeen)).toISOString();
+
     return crossPartitionEntityList({
-      collection:
-        lastSeen === '$'
-          ? firstCollection
-          : truncateDateToWeek(new Date(lastSeen)).toISOString(),
+      collection,
       lastSeen: lastSeen !== '$' ? new Date(lastSeen).toISOString() : '$',
       limit,
       getItems: this.listByCreatedAt,
