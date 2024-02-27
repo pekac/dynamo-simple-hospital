@@ -37,7 +37,7 @@ function decoratePatient(
     createdAt: patient.createdAt.toISOString(),
     /* list by last name */
     GSI1PK: `${PATIENT_ID_PREFIX}${capitalize(firstLetter)}`,
-    GSI1SK: `${PATIENT_ID_PREFIX}${patient.lastName.toUpperCase()}`,
+    GSI1SK: `${PATIENT_ID_PREFIX}${patient.lastName.toUpperCase()}-${patient.id}`,
     /* list by created at */
     GSI2PK: `${PATIENT_ID_PREFIX}${truncateDateToWeek(patient.createdAt).toISOString()}`,
     GSI2SK: `${PATIENT_ID_PREFIX}${patient.createdAt.toISOString()}`,
