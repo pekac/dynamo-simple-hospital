@@ -105,16 +105,15 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
 
     const shouldContinue = (col: string) => col >= lastCollection;
 
-    const getItems = (col: string, limit: number) =>
-      this.listByCreatedAt(col, limit, lastSeen);
-
     const updateCollection = (
       col: string,
-    ): { collection: string; lastSeen?: string } => {
+      lastSeenPatient: Patient & { createdAt: string },
+    ): { collection: string; lastSeen: string } => {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(new Date(col).getDate() - 7);
       return {
         collection: truncateDateToWeek(sevenDaysAgo).toISOString(),
+        lastSeen: lastSeenPatient.createdAt,
       };
     };
 
@@ -123,8 +122,9 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
         lastSeen === '$'
           ? firstCollection
           : truncateDateToWeek(new Date(lastSeen)).toISOString(),
+      lastSeen: lastSeen !== '$' ? new Date(lastSeen).toISOString() : '$',
       limit,
-      getItems,
+      getItems: this.listByCreatedAt,
       shouldContinue,
       updateCollection,
     });
@@ -140,21 +140,23 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
     const shouldContinue = (col: string) =>
       col.charCodeAt(0) <= lastCollection.charCodeAt(0);
 
-    const getItems = (col: string, limit: number, lastSeen = '$') =>
-      this.listByLastName(col, limit, lastSeen.toUpperCase());
-
     const updateCollection = (
       col: string,
-    ): { collection: string; lastSeen?: string } => {
+      lastSeenPatient: Patient,
+    ): { collection: string; lastSeen: string } => {
       return {
         collection: String.fromCharCode(col.charCodeAt(0) + 1),
+        lastSeen: lastSeenPatient
+          ? `${lastSeenPatient?.lastName?.toUpperCase()}-${lastSeenPatient?.id}`
+          : '$',
       };
     };
 
     return crossPartitionEntityList({
       collection: lastSeen === '$' ? firstCollection : lastSeen.charAt(0),
+      lastSeen,
       limit,
-      getItems,
+      getItems: this.listByLastName,
       shouldContinue,
       updateCollection,
     });
