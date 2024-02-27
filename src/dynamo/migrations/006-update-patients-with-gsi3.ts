@@ -92,6 +92,10 @@ export async function updatePatientsWithGSI3(client: DynamoDBDocumentClient) {
         updateRequests.push(request);
       }
 
+      if (updateRequests.length === 0) {
+        return;
+      }
+
       const command = new BatchWriteCommand({
         RequestItems: {
           [DATA_TABLE]: updateRequests,
