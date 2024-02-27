@@ -4,11 +4,11 @@ import {
   QueryCommand,
 } from '@aws-sdk/lib-dynamodb';
 
+import { PATIENT_ID_PREFIX, Patient } from 'src/core';
+
 import { DATA_TABLE } from '../client';
 
 import { crossPartitionEntityList } from '../helpers';
-
-import { PATIENT_ID_PREFIX } from '../../core/';
 
 async function listByLastname(
   client: DynamoDBDocumentClient,
@@ -51,9 +51,13 @@ async function listPatients(
 
   const updateCollection = (
     col: string,
-  ): { collection: string; lastSeen?: string } => {
+    lastSeenPatient: Patient & { createdAt: string },
+  ): { collection: string; lastSeen: string } => {
     return {
       collection: String.fromCharCode(col.charCodeAt(0) + 1),
+      lastSeen: lastSeenPatient
+        ? `${lastSeenPatient?.lastName?.toUpperCase()}-${lastSeenPatient?.id}`
+        : '$',
     };
   };
 
@@ -70,7 +74,7 @@ async function listPatients(
 export async function updatePatientsWithGSI3(client: DynamoDBDocumentClient) {
   /* TODO:
     - if ok - if fail?
-    - undo all from success list? or remember last one written and start from there?
+    - undo all from success list
    */
   let lastSeen: string = '$';
   const limit: number = 25;
