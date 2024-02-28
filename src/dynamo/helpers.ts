@@ -39,13 +39,13 @@ export function objToUpdateExpression(obj: {
   const expressionAttributeValues: { [key: string]: string } = {};
   for (const key in obj) {
     const bind = `:${key.toLowerCase()}`;
-    const expression = `set ${key} = ${bind}`;
+    const expression = `${key} = ${bind}`;
     expressionAttributeValues[bind] = obj[key];
     updateExpression.push(expression);
   }
 
   return {
-    UpdateExpression: updateExpression.join(','),
+    UpdateExpression: `set ${updateExpression.join(',')}`,
     ExpressionAttributeValues: expressionAttributeValues,
   };
 }
