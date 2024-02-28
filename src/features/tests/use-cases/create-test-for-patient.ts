@@ -49,7 +49,7 @@ class CreateTestForPatientHandler
     patientId,
     createTestDto,
   }: CreateTestForPatientCommand): Promise<string | undefined> {
-    return this.tests.addTest(createTestDto, patientId);
+    return this.tests.addTest(patientId, createTestDto);
   }
 }
 

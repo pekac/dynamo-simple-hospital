@@ -22,7 +22,7 @@ export class TestsResource extends Resource<Test> implements ITestsResource {
     });
   }
 
-  addTest(dto: CreateTestDto, patientId: string): Promise<string | undefined> {
+  addTest(patientId: string, dto: CreateTestDto): Promise<string | undefined> {
     return this.create({
       dto,
       parentId: patientId,
@@ -32,11 +32,14 @@ export class TestsResource extends Resource<Test> implements ITestsResource {
 }
 
 function decorateTest(test: CreateTestDto & ItemKey & { createdAt: Date }) {
-  const ksuid = KSUID.randomSync(test.createdAt).string;
+  const createdAt = new Date(test.createdAt).toISOString();
+  const ksuid = KSUID.randomSync(createdAt).string;
   /* override SK */
   test.SK = `${TEST_SK_PREFIX}${ksuid}`;
   return {
     ...test,
+    id: this.stripSkPrefix(test.SK),
+    createdAt,
     /* for fetching by doctor id */
     GSI1PK: `${DOCTOR_ID_PREFIX}${test.doctorId}`,
     GSI1SK: test.SK,

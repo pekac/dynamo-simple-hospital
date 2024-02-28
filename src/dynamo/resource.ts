@@ -67,6 +67,10 @@ export abstract class Resource<T extends Record<keyof T, any>>
     };
   }
 
+  private stripSkPrefix(sk: string): string {
+    return sk.substring(this.skPrefix.length);
+  }
+
   async create({
     decorator = IDENTITY,
     dto,
@@ -76,14 +80,14 @@ export abstract class Resource<T extends Record<keyof T, any>>
     const pk = parentId || dto.id;
     const sk = dto.id;
     const primaryKey = this.generateItemKey(pk, sk);
-    const item = decorator({ ...primaryKey, ...dto, createdAt });
+    const item = decorator.call(this, { ...primaryKey, ...dto, createdAt });
 
     const command = new PutCommand({
       TableName: this.tableName,
       Item: item,
     });
     await this.client.send(command);
-    return dto.id;
+    return item.id;
   }
 
   async one(...args: [string, string?]): Promise<T | undefined> {
