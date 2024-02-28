@@ -90,15 +90,12 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
 
     const shouldContinue = (col: string) => collections.includes(col);
 
-    const getItems = (col: string, limit: number, lastSeen: string) =>
-      this.list(col, limit, lastSeen);
-
-    const updateCollection = (col: string, lastSeen: string = '$') => {
+    const updateCollection = (col: string, lastSeenDoctor: Doctor) => {
       const index = collections.indexOf(col);
       return {
         collection:
           index < collections.length - 1 ? collections[index + 1] : 'THE_END',
-        lastSeen,
+        lastSeen: '$',
       };
     };
 
@@ -106,7 +103,7 @@ class ListDoctorsHandler implements IQueryHandler<ListDoctorsQuery> {
       collection: lastCollection?.toUpperCase() || collections[0],
       lastSeen: lastSeen,
       limit,
-      getItems,
+      getItems: this.list,
       shouldContinue,
       updateCollection,
     });
