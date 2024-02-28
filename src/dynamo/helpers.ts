@@ -94,8 +94,6 @@ export async function crossPartitionEntityList<T extends Identity>({
 }: ICrossPartitionEntityList<T>): Promise<T[]> {
   const entityList: T[] = [];
   while (entityList.length < totalLimit && shouldContinue(collection)) {
-    console.log('collection: ', collection);
-    console.log('lastSeen: ', lastSeen);
     const items = await getItems(
       collection,
       totalLimit - entityList.length,

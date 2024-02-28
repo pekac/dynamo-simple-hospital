@@ -20,6 +20,9 @@ import { truncateDateToWeek } from 'src/utils';
 
 import { ListPatientsDto } from '../common';
 
+/* unicode @ is > then numbers */
+const LAST_SEEN_CREATED_AT = '@';
+
 class ListPatientsQuery {
   constructor(public readonly queryParams: ListPatientsDto) {}
 }
@@ -66,9 +69,9 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
   }
 
   async listByCreatedAt(
-    collection: string = truncateDateToWeek(new Date()).toISOString(),
+    collection: string,
     limit: number = 20,
-    lastSeen: string = new Date().toISOString(),
+    lastSeen: string,
   ): Promise<Patient[]> {
     const { projectionExpression, projectionNames } =
       projectionGenerator(Patient);
@@ -95,7 +98,7 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
   }
 
   async getPatientsByCreatedAt({
-    lastSeen = '$',
+    lastSeen = LAST_SEEN_CREATED_AT,
     limit,
   }: ListPatientsDto): Promise<Patient[]> {
     const firstCollection = truncateDateToWeek(new Date()).toISOString();
@@ -113,18 +116,18 @@ class ListPatientsHandler implements IQueryHandler<ListPatientsQuery> {
       sevenDaysAgo.setDate(new Date(col).getDate() - 7);
       return {
         collection: truncateDateToWeek(sevenDaysAgo).toISOString(),
-        lastSeen: lastSeenPatient?.createdAt || '$',
+        lastSeen: lastSeenPatient?.createdAt || LAST_SEEN_CREATED_AT,
       };
     };
 
     const collection =
-      lastSeen === '$'
+      lastSeen === LAST_SEEN_CREATED_AT
         ? firstCollection
         : truncateDateToWeek(new Date(lastSeen)).toISOString();
 
     return crossPartitionEntityList({
       collection,
-      lastSeen: lastSeen !== '$' ? new Date(lastSeen).toISOString() : '$',
+      lastSeen,
       limit,
       getItems: this.listByCreatedAt,
       shouldContinue,
