@@ -55,8 +55,8 @@ class ListTestsForDoctorHandler
       KeyConditionExpression: '#pk = :pk AND #sk < :sk',
       ProjectionExpression: projectionExpression,
       ExpressionAttributeNames: {
-        '#pk': 'PK',
-        '#sk': 'SK',
+        '#pk': 'GSI1PK',
+        '#sk': 'GSI1SK',
         ...projectionNames,
       },
       ExpressionAttributeValues: {
