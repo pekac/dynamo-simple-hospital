@@ -7,7 +7,7 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { Patient } from 'src/core';
+import { DoctorPatient } from 'src/core';
 
 import {
   DOCTOR_ID_PREFIX,
@@ -52,12 +52,12 @@ class ListPatientsForDoctorHandler
     doctorId: string,
     limit: number = 20,
     lastSeen: string = '$',
-  ): Promise<Patient[]> {
+  ): Promise<DoctorPatient[]> {
     const PK = `${DOCTOR_ID_PREFIX}${doctorId}`;
     const SK = lastSeen === '$' ? PK : `${PATIENT_ID_PREFIX}${lastSeen}`;
 
     const { projectionExpression, projectionNames } =
-      projectionGenerator(Patient);
+      projectionGenerator(DoctorPatient);
 
     const command = new QueryCommand({
       TableName: DATA_TABLE,
@@ -75,7 +75,7 @@ class ListPatientsForDoctorHandler
       Limit: limit,
     });
     const { Items = [] } = await client.send(command);
-    return Items as Patient[];
+    return Items as DoctorPatient[];
   }
 
   async execute({ doctorId, queryParams }: ListPatientsForDoctorQuery) {
