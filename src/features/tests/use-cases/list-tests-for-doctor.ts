@@ -7,9 +7,15 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { DOCTOR_ID_PREFIX, TEST_SK_PREFIX, Test } from 'src/core';
+import { Test } from 'src/core';
 
-import { DATA_TABLE, client, projectionGenerator } from 'src/dynamo';
+import {
+  DOCTOR_ID_PREFIX,
+  DATA_TABLE,
+  client,
+  projectionGenerator,
+  TEST_SK_PREFIX,
+} from 'src/dynamo';
 
 import { ListTestsParamsDto, NoTestsFoundForDoctorException } from '../common';
 

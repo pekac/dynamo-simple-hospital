@@ -4,7 +4,9 @@ import {
   QueryCommand,
 } from '@aws-sdk/lib-dynamodb';
 
-import { PATIENT_ID_PREFIX, Patient } from 'src/core';
+import { Patient } from 'src/core';
+
+import { PATIENT_ID_PREFIX } from '../constants';
 
 import { DATA_TABLE } from '../client';
 

@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import {
-  CreateDoctorDto,
-  DOCTOR_ID_PREFIX,
-  Doctor,
-  IDoctorsResource,
-} from 'src/core';
+import { CreateDoctorDto, Doctor, IDoctorsResource } from 'src/core';
+
+import { DOCTOR_ID_PREFIX } from '../constants';
 
 import { ItemKey, Resource } from '../resource';
 

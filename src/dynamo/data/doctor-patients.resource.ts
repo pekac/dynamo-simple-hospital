@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 
 import {
   AssignPatientToDoctorDto,
-  DOCTOR_ID_PREFIX,
   Doctor,
   DoctorPatient,
   IDoctorPatientsResource,
-  PATIENT_ID_PREFIX,
 } from 'src/core';
+
+import { PATIENT_ID_PREFIX, DOCTOR_ID_PREFIX } from '../constants';
 
 import { ItemKey, Resource } from '../resource';
 
@@ -29,14 +29,14 @@ export class DoctorPatientsResource
     addPatientDto: AssignPatientToDoctorDto,
   ): Promise<string | undefined> {
     const decorator = generateDecorator(doctor);
-    return super.create({ dto: addPatientDto, parentId: doctor.id, decorator });
+    return this.create({ dto: addPatientDto, parentId: doctor.id, decorator });
   }
 
   removePatientFromDoctor(
     doctorId: string,
     patientId: string,
   ): Promise<string | undefined> {
-    return super.remove(doctorId, patientId);
+    return this.remove(doctorId, patientId);
   }
 }
 
@@ -44,17 +44,17 @@ function generateDecorator(doctor: Doctor) {
   return function decorateDoctorPatient(
     addPatientDto: AssignPatientToDoctorDto & ItemKey,
   ) {
-    const doctorPK = `${DOCTOR_ID_PREFIX}${doctor.id}`;
     return {
+      PK: addPatientDto.PK,
+      SK: addPatientDto.SK,
+      id: addPatientDto.id,
       patientName: `${addPatientDto.firstName} ${addPatientDto.lastName}`,
       patientId: addPatientDto.id,
       doctorName: `${doctor?.firstName} ${doctor?.lastName}`,
       specialization: doctor?.specialization,
       doctorId: doctor.id,
-      PK: doctorPK,
-      SK: addPatientDto.PK,
-      GSI3PK: addPatientDto.PK,
-      GSI3SK: doctorPK,
+      GSI3PK: addPatientDto.SK,
+      GSI3SK: addPatientDto.PK,
     };
   };
 }

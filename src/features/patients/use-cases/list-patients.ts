@@ -7,13 +7,14 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { PATIENT_ID_PREFIX, Patient } from 'src/core';
+import { Patient } from 'src/core';
 
 import {
   DATA_TABLE,
   client,
   crossPartitionEntityList,
   projectionGenerator,
+  PATIENT_ID_PREFIX,
 } from 'src/dynamo';
 
 import { truncateDateToWeek } from 'src/utils';

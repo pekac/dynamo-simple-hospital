@@ -1,8 +1,10 @@
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
-import { ISpecializationResource, SPECIALIZATION_KEY } from 'src/core';
+import { ISpecializationResource } from 'src/core';
 
 import { DATA_TABLE, client } from '../client';
+
+import { SPECIALIZATION_KEY } from '../constants';
 
 export class SpecializationResource implements ISpecializationResource {
   async create(specialization: string): Promise<string | undefined> {

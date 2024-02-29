@@ -1,8 +1,6 @@
 import { GetCommand } from '@aws-sdk/lib-dynamodb';
 
-import { SPECIALIZATION_KEY } from 'src/core';
-
-import { DATA_TABLE, client } from 'src/dynamo';
+import { DATA_TABLE, client, SPECIALIZATION_KEY } from 'src/dynamo';
 
 export async function getSpecializationsQuery(): Promise<string[]> {
   const command = new GetCommand({

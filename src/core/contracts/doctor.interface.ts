@@ -12,14 +12,4 @@ export abstract class IDoctorsResource {
     updateDoctorDto: Partial<Doctor>,
   ): Promise<Doctor>;
   abstract remove(doctorId: string): Promise<string>;
-  // abstract list(
-  //   startCollection: string,
-  //   limit: number,
-  //   lastSeen: string,
-  // ): Promise<Doctor[]>;
-  // abstract listDoctorsForPatient(
-  //   patientId: string,
-  //   limit?: number,
-  //   lastSeen?: string,
-  // ): Promise<Doctor[]>;
 }

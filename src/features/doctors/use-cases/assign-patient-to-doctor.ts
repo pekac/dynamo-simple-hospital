@@ -36,10 +36,10 @@ class AssignPatientToDoctorCommand {
 class AssignPatientToDoctorController {
   constructor(private readonly commandBus: CommandBus) {}
 
-  @Post('doctors/:id/patients')
+  @Post('doctors/:doctorId/patients')
   @UsePipes(new ValidationPipe())
   addPatientToDoctor(
-    @Param('id') doctorId: string,
+    @Param('doctorId') doctorId: string,
     @Body() assignPatientDto: AssignPatientToDoctorDto,
   ) {
     return this.commandBus.execute(

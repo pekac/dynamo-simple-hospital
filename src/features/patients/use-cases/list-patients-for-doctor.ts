@@ -7,9 +7,15 @@ import {
 } from '@nestjs/cqrs';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 
-import { DOCTOR_ID_PREFIX, PATIENT_ID_PREFIX, Patient } from 'src/core';
+import { Patient } from 'src/core';
 
-import { DATA_TABLE, client, projectionGenerator } from 'src/dynamo';
+import {
+  DOCTOR_ID_PREFIX,
+  DATA_TABLE,
+  client,
+  projectionGenerator,
+  PATIENT_ID_PREFIX,
+} from 'src/dynamo';
 
 import {
   ListPatientsForDoctorDto,

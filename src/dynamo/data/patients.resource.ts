@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import {
-  CreatePatientDto,
-  IPatientsResource,
-  PATIENT_ID_PREFIX,
-  Patient,
-} from 'src/core';
+import { CreatePatientDto, IPatientsResource, Patient } from 'src/core';
 
 import { capitalize, truncateDateToWeek } from 'src/utils';
+
+import { PATIENT_ID_PREFIX } from '../constants';
 
 import { ItemKey, Resource } from '../resource';
 

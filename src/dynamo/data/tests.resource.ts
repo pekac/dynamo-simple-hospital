@@ -1,14 +1,9 @@
 import { Injectable } from '@nestjs/common';
 const KSUID = require('ksuid');
 
-import {
-  CreateTestDto,
-  DOCTOR_ID_PREFIX,
-  ITestsResource,
-  TEST_PK_PREFIX,
-  TEST_SK_PREFIX,
-  Test,
-} from 'src/core';
+import { CreateTestDto, ITestsResource, Test } from 'src/core';
+
+import { DOCTOR_ID_PREFIX, TEST_PK_PREFIX, TEST_SK_PREFIX } from '../constants';
 
 import { ItemKey, Resource } from '../resource';
 
