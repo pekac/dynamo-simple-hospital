@@ -19,7 +19,7 @@ class RemovePatientFromDoctorCommand {
 class RemovePatientFromDoctorController {
   constructor(private readonly commandBus: CommandBus) {}
 
-  @Delete(':doctorId/patients/:patientId')
+  @Delete('doctors/:doctorId/patients/:patientId')
   removePatientFromDoctor(
     @Param('doctorId') doctorId: string,
     @Param('patientId') patientId: string,
