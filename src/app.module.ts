@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
 import { DynamoModule } from './dynamo';
 
 import { DoctorsModule, PatientsModule, TestsModule } from './features';
 
 @Module({
-  imports: [DoctorsModule, DynamoModule, PatientsModule, TestsModule],
+  imports: [
+    ConfigModule.forRoot(),
+    DoctorsModule,
+    DynamoModule,
+    PatientsModule,
+    TestsModule,
+  ],
 })
 export class AppModule {}

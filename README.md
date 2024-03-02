@@ -307,7 +307,7 @@ Entity chart is used to keep track of all the different item types that we are g
 
 ## Things left to be done
 
-- [] Move DynamoDB creds to .env
+- [x] Move DynamoDB creds to .env
 - [] Implement result pattern
 - [] Export postman collection
 - [] Add tests
