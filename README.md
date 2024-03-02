@@ -40,7 +40,46 @@ As different access patterns were modeled two more entities were added:
 - DoctorPatient - to address many-to-many relationship between Doctors and Patients
 - Specialization - singleton that has a set of all medical departments in a hospital
 
-> **Note**: Entities here are not used in the DDD sense but rather in the "types of items in the db" sense.
+## Entity chart
+
+Entity chart is used to keep track of all the different item types that we are going to store in our table.
+
+<table>
+  <thead>
+    <tr>
+      <th>ENTITY</th>
+      <th>PK</th>
+      <th>SK</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Patient</td>
+      <td>PATIENT#&lt;PatientId&gt;</td>
+      <td>PATIENT#&lt;PatientId&gt;</td>
+    </tr>
+    <tr>
+      <td>Doctor</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+    </tr>
+    <tr>
+      <td>Test</td>
+      <td>PATIENT#&lt;PatientId&gt;</td>
+      <td>#TEST#&lt;KSUID&gt;</td>
+    </tr>
+    <tr>
+      <td>Specialization</td>
+      <td>DOCTOR</td>
+      <td>SPECIALIZATION</td>
+    </tr>
+    <tr>
+      <td>DoctorPatient</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+      <td>PATIENT#&lt;PatientId&gt;</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Access patterns
 
@@ -186,11 +225,85 @@ As different access patterns were modeled two more entities were added:
       <td>pk: DOCTOR#&lt;DoctorId&gt; sk: PATIENT#&lt;PatientId&gt;</td>
       <td>/</td>
     </tr>
-
   </tbody>
 </table>
 
-## GSI table
+## GSI1 TABLE
+
+<table>
+  <thead>
+    <tr>
+      <th>ENTITY</th>
+      <th>GSI1PK</th>
+      <th>GSI1SK</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Doctor</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+    </tr>
+    <tr>
+      <td>Test</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+      <td>#TEST#&lt;KSUID&gt;</td>
+    </tr>
+    <tr>
+      <td>Patient</td>
+      <td>PATIENT#&lt;TRUNC(LastName)&gt;</td>
+      <td>PATIENT#LAST_NAME)&gt;</td>
+    </tr>
+  </tbody>
+</table>
+
+## GSI2 TABLE
+
+<table>
+  <thead>
+    <tr>
+      <th>ENTITY</th>
+      <th>GSI2PK</th>
+      <th>GSI2SK</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Patient</td>
+      <td>PATIENT#&lt;TRUNC(WEEK)&gt;</td>
+      <td>PATIENT#CREATED_AT</td>
+    </tr>
+    <tr>
+      <td>Doctor</td>
+      <td>SPECIALIZATION#&lt;Specialization&gt;</td>
+      <td>&lt;Specialization&gt;#&lt;DoctorId&gt;</td>
+    </tr>
+  </tbody>
+</table>
+
+## GSI3 TABLE
+
+<table>
+  <thead>
+    <tr>
+      <th>ENTITY</th>
+      <th>GSI3PK</th>
+      <th>GSI3SK</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Patient</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+      <td>PATIENT#&lt;PatientId&gt;</td>
+    </tr>
+    <tr>
+      <td>Doctor</td>
+      <td>PATIENT#&lt;PatientId&gt;</td>
+      <td>DOCTOR#&lt;DoctorId&gt;</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Things left to be done
 
